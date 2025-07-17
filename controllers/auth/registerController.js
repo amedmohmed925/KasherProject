@@ -1,22 +1,63 @@
 const User = require('../../models/User');
+const Tenant = require('../../models/Tenant');
 const bcrypt = require('bcryptjs');
+const mailSender = require('../../utils/mailSender');
+
 
 module.exports = async (req, res) => {
   try {
-    const { name, email, password, role, tenantId } = req.body;
-    if (!name || !email || !password || !role) {
-      return res.status(400).json({ message: 'All fields are required' });
+    const { name, email, password, confirmPassword, companyName, companyAddress } = req.body;
+
+    if (!name || !email || !password || !confirmPassword || !companyName || !companyAddress) {
+      return res.status(400).json({ message: "All fields are required" });
     }
-    if (!['admin', 'superAdmin'].includes(role)) {
-      return res.status(403).json({ message: 'Only admin or superAdmin can register directly. Employees must be invited.' });
+
+    if (password !== confirmPassword) {
+      return res.status(400).json({ message: "Passwords do not match" });
     }
+
+  
+
     const exists = await User.findOne({ email });
-    if (exists) return res.status(400).json({ message: 'Email already exists' });
+    if (exists) return res.status(400).json({ message: "Email already exists" });
+
+    // إنشاء شركة جديدة
+    const tenant = new Tenant({
+      name: companyName,
+      address: companyAddress
+    });
+    await tenant.save();
+
+    // إنشاء الأدمن وربطه بالشركة
     const hash = await bcrypt.hash(password, 10);
-    const user = new User({ name, email, password: hash, role, tenantId: tenantId || null });
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const user = new User({
+      name,
+      email,
+      password: hash,
+      role: 'admin',
+      tenantId: tenant._id,
+      companyName: tenant.name,
+      companyAddress: tenant.address,
+      isVerified: false,
+      otp
+    });
     await user.save();
-    res.status(201).json({ message: 'User registered', user: { id: user._id, name: user.name, email: user.email, role: user.role } });
-  } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+
+    // ربط الأدمن بالـ tenant
+    tenant.adminId = user._id;
+    await tenant.save();
+
+    // إرسال رمز التحقق
+    await mailSender(
+      email,
+      "رمز التحقق من البريد الإلكتروني",
+      `<h1>مرحبًا بك!</h1><p>رمز التحقق الخاص بك هو: <b>${otp}</b></p>`
+    );
+
+    res.status(201).json({ message: "تم التسجيل بنجاح. يرجى التحقق من بريدك الإلكتروني." });
+  } catch (error) {
+    console.error("Error in register:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };

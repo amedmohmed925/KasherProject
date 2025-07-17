@@ -1,16 +1,32 @@
+
 # Auth Feature Endpoints
 
 Base URL: `http://localhost:8080/api`
 
 ## Register (Admins Only)
 - **POST** `/register`
-- Body: `{ name, email, password, role, tenantId (optional for superAdmin) }`
-- Description: Register a new admin or superAdmin only. Employees cannot register directly.
+- Body: `{ name, email, password, companyName, companyAddress }`
+- Description: Register a new admin and create a company. Employees cannot register directly.
 
 ## Login
 - **POST** `/login`
 - Body: `{ email, password }`
 - Description: Login and receive JWT token.
+
+## Verify OTP (Registration)
+- **POST** `/verify-otp`
+- Body: `{ email, otp }`
+- Description: Verify OTP sent to email during registration. Required to activate account.
+
+## Forgot Password
+- **POST** `/forgot-password`
+- Body: `{ email }`
+- Description: Send a password reset OTP to the user's email.
+
+## Reset Password
+- **POST** `/reset-password`
+- Body: `{ email, otp, newPassword, confirmNewPassword }`
+- Description: Reset password using OTP sent to email.
 
 ## Invite Employee
 - **POST** `/invite-employee`

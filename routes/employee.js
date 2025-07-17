@@ -1,6 +1,7 @@
 const express = require('express');
 const { authenticate, authorize } = require('../middleware/auth');
-const { getProductBySku, createInvoice } = require('../controllers/employeeController');
+const  createInvoice  = require('../controllers/employee/createInvoiceController');
+const  getProductBySku  = require('../controllers/employee/getProductBySkuController');
 const { body } = require('express-validator');
 const validate = require('../middleware/validate');
 

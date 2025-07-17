@@ -1,6 +1,11 @@
 const express = require('express');
 const { authenticate, authorize } = require('../middleware/auth');
-const { listTenants, getTenantDetails, createAdmin, updateAdmin, deleteAdmin, globalReport } = require('../controllers/superAdminController');
+const  createAdmin = require('../controllers/superAdmin/createAdminController');
+const  deleteAdmin = require('../controllers/superAdmin/deleteAdminController');
+const  getTenantDetails = require('../controllers/superAdmin/getTenantDetailsController');
+const  globalReport  = require('../controllers/superAdmin/globalReportController');
+const  listTenants = require('../controllers/superAdmin/listTenantsController');
+const  updateAdmin = require('../controllers/superAdmin/updateAdminController');
 const { body } = require('express-validator');
 const validate = require('../middleware/validate');
 
