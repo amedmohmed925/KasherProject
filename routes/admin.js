@@ -1,3 +1,5 @@
+const getInvoiceProfitController = require('../controllers/admin/invoices/getInvoiceProfitController');
+// Get profit (original vs selling price) for a specific invoice
 const getEmployeesController = require('../controllers/admin/employees/getEmployeesController');
 const deleteEmployeeController = require('../controllers/admin/employees/deleteEmployeeController');
 
@@ -19,10 +21,15 @@ const addCategoryController = require('../controllers/admin/categories/addCatego
 const getCategoriesController = require('../controllers/admin/categories/getCategoriesController');
 const deleteCategoryController = require('../controllers/admin/categories/deleteCategoryController');
 const updateCategoryController = require('../controllers/admin/categories/updateCategoryController');
+const getAllInvoicesController = require('../controllers/admin/invoices/getAllInvoicesController');
+const getAdminStatsController = require('../controllers/admin/getAdminStatsController');
 
 // Get all categories
 router.get('/categories', authenticate, authorize('admin'), getCategoriesController);
 
+// Admin stats: employees count, invoices count, daily/monthly/yearly profits
+router.get('/stats', authenticate, authorize('admin'), getAdminStatsController);
+// Get all invoices with full details
 // Add category
 router.post('/categories',
   authenticate,
@@ -32,6 +39,7 @@ router.post('/categories',
   addCategoryController
 );
 
+router.get('/all-invoices', authenticate, authorize('admin'), getAllInvoicesController);
 // Update category
 router.put('/categories/:id',
   authenticate,
@@ -64,8 +72,8 @@ router.post('/products',
 
 // Update product
 router.put('/products/:id',
-  authenticate,
-  authorize('admin'),
+    authenticate,
+    authorize('admin'),
   body('name').notEmpty(),
   body('sku').notEmpty(),
   body('originalPrice').isNumeric(),
@@ -82,5 +90,6 @@ router.get('/invoices', authenticate, authorize('admin'), listInvoices);
 router.get('/reports', authenticate, authorize('admin'), generateReport);
 router.get('/employees', authenticate, authorize('admin'), getEmployeesController);
 router.delete('/employees/:id', authenticate, authorize('admin'), deleteEmployeeController);
+router.get('/invoices/:id/profit', authenticate, authorize('admin'), getInvoiceProfitController);
 
 module.exports = router;
