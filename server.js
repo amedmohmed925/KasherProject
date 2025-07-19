@@ -5,7 +5,6 @@ const cors = require('cors');
 const morgan = require('morgan');
 const { logRequests } = require('./middleware/logger');
 
-const employeeRoutes = require('./routes/employee');
 const adminRoutes = require('./routes/admin');
 const superAdminRoutes = require('./routes/superAdmin');
 const authRoutes = require('./routes/auth');
@@ -20,10 +19,9 @@ app.use(logRequests);
 
 
 // Routes
-app.use('/api', authRoutes);
-app.use('/api', employeeRoutes);
-app.use('/api', adminRoutes);
-app.use('/api', superAdminRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/superAdmin', superAdminRoutes);
 
 // Error handler
 app.use((err, req, res, next) => {

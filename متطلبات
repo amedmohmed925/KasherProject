@@ -1,0 +1,42 @@
+Core Features to Build:
+1. Authentication Module
+Registration flow for Business Owners (first name, last name, business name, phone, email, password, confirm password)
+
+Login / Logout
+
+Super Admin approval check for subscriptions
+
+2. Subscription Management
+30-day trial logic
+
+Monthly (49 EGP), Yearly (499 EGP), and Custom plans via WhatsApp/email sales contact
+
+Handle subscription state and integrate payment confirmation logic from backend
+
+3. Inventory Module
+Add, edit, delete products with:
+
+Name, buying price, selling price, category, quantity, barcode (via scan or input)
+
+Create and filter categories
+
+Search/filter products by name, category, profit, quantity, price
+
+4. Invoice Module
+Barcode scan to add products to invoice
+
+Edit quantities, calculate totals
+
+Search/filter by customer name, price, date
+
+5. Home Dashboard
+Analytics: inventory status and invoice summaries
+
+Filter data by day, week, month, or custom range via calendar
+
+6. Super Admin Interface (Minimal Mobile View)
+View all registered business users
+
+Accept/reject subscription payments
+
+Send rejection messages via integrated messaging system

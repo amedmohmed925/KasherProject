@@ -24,3 +24,22 @@
 {"level":"info","message":{"body":{"email":"aahmed.muhaamed@example.com","name":"أحمد محمد","tenantId":"6878e30bfd3971183f26c11d"},"method":"POST","url":"/api/invite-employee","user":null},"timestamp":"2025-07-17T14:04:55.101Z"}
 {"level":"info","message":{"body":{},"method":"GET","url":"/api/accept-invite?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFhaG1lZC5tdWhhYW1lZEBleGFtcGxlLmNvbSIsInRlbmFudElkIjoiNjg3OGUzMGJmZDM5NzExODNmMjZjMTFkIiwibmFtZSI6Itij2K3ZhdivINmF2K3ZhdivIiwicm9sZSI6ImVtcGxveWVlIiwiaWF0IjoxNzUyNzYxMDk1LCJleHAiOjE3NTI5MzM4OTV9.iZo1nzEm8z0h7v7OhAYKfl7ZBIV1daJKLVdgmSbeLH8","user":null},"timestamp":"2025-07-17T14:05:41.227Z"}
 {"level":"info","message":{"body":{},"method":"GET","url":"/.well-known/appspecific/com.chrome.devtools.json","user":null},"timestamp":"2025-07-17T14:05:41.467Z"}
+{"level":"info","message":{"body":{},"method":"GET","url":"/api/super-admin/tenants","user":null},"timestamp":"2025-07-19T15:27:44.264Z"}
+{"level":"info","message":{"body":{"email":"mohamed.ali@example.com","password":"StrongPassword123"},"method":"POST","url":"/api/login","user":null},"timestamp":"2025-07-19T15:32:06.170Z"}
+{"level":"info","message":{"body":{"email":"slavyanc@haanhwedding.vn","password":"StrongPassword123"},"method":"POST","url":"/api/login","user":null},"timestamp":"2025-07-19T15:32:13.219Z"}
+{"level":"info","message":{"body":{"email":"slavyanc@haanhwedding.vn","password":"StrongPassword123"},"method":"POST","url":"/api/login","user":null},"timestamp":"2025-07-19T15:33:11.704Z"}
+{"level":"info","message":{"body":{"email":"slavyanc@haanhwedding.vn","password":"StrongPassword123"},"method":"POST","url":"/api/login","user":null},"timestamp":"2025-07-19T15:37:15.556Z"}
+{"level":"info","message":{"body":{"email":"slavyanc@haanhwedding.vn","password":"StrongPassword123"},"method":"POST","url":"/api/login","user":null},"timestamp":"2025-07-19T15:55:23.194Z"}
+{"level":"info","message":{"body":{"email":"mohamed.ali@example.com","password":"StrongPassword123"},"method":"POST","url":"/api/login","user":null},"timestamp":"2025-07-19T15:56:10.736Z"}
+{"level":"info","message":{"body":{"businessName":"شركة النور التقنية","confirmPassword":"TestPassword123","email":"amedmohmed925@gmail.com","firstName":"أحمد","lastName":"الرفاعي","password":"TestPassword123","phone":"01012345678"},"method":"POST","url":"/api/register","user":null},"timestamp":"2025-07-19T15:58:02.714Z"}
+{"level":"info","message":{"body":{"email":"amedmohmed925@gmail.com","otp":"609501"},"method":"POST","url":"/api/verify-otp","user":null},"timestamp":"2025-07-19T15:59:50.964Z"}
+{"level":"info","message":{"body":{"email":"amedmohmed925@gmail.com","password":"TestPassword123"},"method":"POST","url":"/api/login","user":null},"timestamp":"2025-07-19T16:00:22.452Z"}
+{"level":"info","message":{"body":{"email":"amedmohmed925@gmail.com","password":"TestPassword123"},"method":"POST","url":"/api/login","user":null},"timestamp":"2025-07-19T16:00:30.128Z"}
+{"level":"info","message":{"body":{"email":"amedmohmed925@gmail.com","password":"TestPassword123"},"method":"POST","url":"/api/login","user":null},"timestamp":"2025-07-19T16:01:52.472Z"}
+{"level":"info","message":{"body":{"email":"amedmohmed925@gmail.com","password":"TestPassword123"},"method":"POST","url":"/api/login","user":null},"timestamp":"2025-07-19T16:02:03.128Z"}
+{"level":"info","message":{"body":{"email":"amedmohmed925@gmail.com","password":"TestPassword123"},"method":"POST","url":"/api/login","user":null},"timestamp":"2025-07-19T16:04:31.285Z"}
+{"level":"info","message":{"body":{},"method":"GET","url":"/api/super-admin/tenants","user":null},"timestamp":"2025-07-19T16:05:17.730Z"}
+{"level":"info","message":{"body":{},"method":"GET","url":"/api/superAdmin/tenants","user":null},"timestamp":"2025-07-19T16:06:06.705Z"}
+{"level":"info","message":{"body":{},"method":"GET","url":"/api/superAdmin/tenants","user":null},"timestamp":"2025-07-19T16:10:24.430Z"}
+{"level":"info","message":{"body":{},"method":"GET","url":"/api/superAdmin/tenants","user":null},"timestamp":"2025-07-19T16:10:33.162Z"}
+{"level":"info","message":{"body":{},"method":"GET","url":"/api/superAdmin/tenants","user":null},"timestamp":"2025-07-19T16:13:21.036Z"}
