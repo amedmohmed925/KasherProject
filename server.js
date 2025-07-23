@@ -7,6 +7,7 @@ const { logRequests } = require('./middleware/logger');
 const rateLimit = require('express-rate-limit');
 const xss = require('xss-clean');
 const helmet = require('helmet');
+const csrf = require('csurf');
 
 const adminRoutes = require('./routes/admin');
 const superAdminRoutes = require('./routes/superAdmin');
@@ -21,6 +22,12 @@ app.use(morgan('dev'));
 app.use(logRequests);
 app.use(xss());
 app.use(helmet());
+
+// CSRF Protection Middleware
+const csrfProtection = csrf({
+  cookie: true,
+});
+app.use(csrfProtection);
 
 // Rate Limiting Middleware
 const limiter = rateLimit({
