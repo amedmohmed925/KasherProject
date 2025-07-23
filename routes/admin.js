@@ -14,6 +14,7 @@ const deleteCategoryController = require('../controllers/admin/categories/delete
 const updateCategoryController = require('../controllers/admin/categories/updateCategoryController');
 const getAllInvoicesController = require('../controllers/admin/invoices/getAllInvoicesController');
 const getAdminStatsController = require('../controllers/admin/getAdminStatsController');
+const analyticsController = require('../controllers/admin/dashboard/analyticsController');
 
 const router = express.Router();
 
@@ -84,5 +85,8 @@ router.delete('/products/:id', authenticate, authorize('admin'), deleteProduct);
 // فواتير البيع وإدارتها للأدمن فقط
 router.get('/invoices', authenticate, authorize('admin'), listInvoices);
 router.get('/reports', authenticate, authorize('admin'), generateReport);
+
+// Dashboard Analytics
+router.get('/dashboard/analytics', authenticate, authorize('admin'), analyticsController);
 
 module.exports = router;

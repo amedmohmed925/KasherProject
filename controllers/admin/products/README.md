@@ -45,6 +45,24 @@ Base URL: `http://localhost:8080/api/admin/products`
   { "message": "Product deleted" }
   ```
 
+## Search Products
+- **GET** `/search`
+- Query Params (اختياري):
+  - `name` (String): بحث باسم المنتج.
+  - `category` (String): تصفية حسب التصنيف.
+  - `profit` (Number): تصفية حسب الربح.
+  - `quantity` (Number): تصفية حسب الكمية.
+  - `price` (Number): تصفية حسب السعر.
+- Description: Search and filter products based on various criteria.
+- Response Example:
+  ```json
+  {
+    "products": [
+      { "_id": "...", "name": "...", "sku": "...", "originalPrice": 40, "sellingPrice": 50, "quantity": 100, "categoryId": "...", "tenantId": "..." }
+    ]
+  }
+  ```
+
 ---
 
 - جميع المسارات تتطلب توثيق الأدمن (JWT) في الهيدر.

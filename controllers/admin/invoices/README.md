@@ -27,6 +27,49 @@ Base URL: `http://localhost:8080/api/admin/invoices`
   }
   ```
 
+## Add Invoice
+- **POST** `/`
+- Body Parameters:
+  - `products` (Array): قائمة المنتجات مع الكمية.
+    - `productId` (String): معرف المنتج.
+    - `quantity` (Number): الكمية المطلوبة.
+  - `customerName` (String, اختياري): اسم العميل.
+  - `totalPrice` (Number): إجمالي السعر.
+- Description: Create a new invoice with product details and total price.
+- Response Example:
+  ```json
+  {
+    "message": "Invoice created successfully",
+    "invoice": {
+      "products": [...],
+      "customerName": "...",
+      "totalPrice": 100,
+      "date": "..."
+    }
+  }
+  ```
+
+## Search Invoices
+- **GET** `/search`
+- Query Params (اختياري):
+  - `customerName` (String): بحث باسم العميل.
+  - `price` (Number): تصفية حسب السعر الإجمالي.
+  - `date` (ISO8601): تصفية حسب التاريخ.
+- Description: Search and filter invoices based on customer name, price, or date.
+- Response Example:
+  ```json
+  {
+    "invoices": [
+      {
+        "products": [...],
+        "customerName": "...",
+        "totalPrice": 100,
+        "date": "..."
+      }
+    ]
+  }
+  ```
+
 ---
 
 - جميع المسارات تتطلب توثيق الأدمن (JWT) في الهيدر.

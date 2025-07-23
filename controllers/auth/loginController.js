@@ -1,4 +1,5 @@
 const User = require('../../models/User');
+const Token = require('../../models/Token');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
@@ -40,13 +41,24 @@ module.exports = async (req, res) => {
       { expiresIn: '1h' }
     );
 
+    // توليد Refresh Token
+    const refreshToken = jwt.sign(
+      { id: user._id, role: user.role, tenantId: user.tenantId },
+      process.env.REFRESH_TOKEN_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    // حفظ Refresh Token في قاعدة البيانات
+    await Token.create({ token: refreshToken });
+
     // تحويل المستخدم إلى كائن JSON واستثناء حقل password
     const userData = user.toJSON();
     delete userData.password;
 
-    // إرجاع التوكن وبيانات المستخدم الكاملة
+    // إرجاع التوكنات وبيانات المستخدم الكاملة
     res.status(200).json({
       token,
+      refreshToken,
       user: userData
     });
   } catch (error) {

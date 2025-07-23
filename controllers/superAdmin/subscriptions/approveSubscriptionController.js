@@ -49,6 +49,13 @@ module.exports = async (req, res) => {
           `<h1>طلب الاشتراك</h1><p>تم رفض طلب الاشتراك الخاص بك. السبب: ${rejectionReason}</p><p>يرجى التواصل مع فريق الدعم لمزيد من التفاصيل.</p>`
         );
       }
+
+      // إرسال إيميل للمسؤول عن الرفض بدلاً من استخدام messagingSystem
+      await mailSender(
+        tenant.adminEmail, // البريد الإلكتروني للمسؤول
+        'رفض الاشتراك',
+        `تم رفض اشتراكك بسبب: ${rejectionReason}`
+      );
     }
 
     res.status(200).json({ message: `Subscription ${status} successfully` });

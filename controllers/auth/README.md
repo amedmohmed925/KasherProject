@@ -1,5 +1,3 @@
-
-
 # Auth Feature Endpoints
 
 Base URL: `http://localhost:8080/api`
@@ -89,63 +87,53 @@ Base URL: `http://localhost:8080/api`
 
 ---
 
-## 6. Invite Employee
-**POST** `/invite-employee`
-- **Headers:** `Authorization: Bearer <token>` (admin or superAdmin only)
+## 6. Refresh Token
+**POST** `/refresh-token`
 - **Body:**
   ```json
-  { "email": "string", "tenantId": "string", "name": "string (optional)" }
+  { "refreshToken": "string" }
   ```
 - **Description:**
-  - Sends invitation email to employee to join the company.
-  - Generates a unique invite link with a token (valid 2 days).
-- **Response:** Success message and invite link.
-
----
-
-## 7. Get Invite Info
-**GET** `/invite-info?token=...`
-- **Description:**
-  - Decodes invite token and returns company name, address, and invitee email/name for registration page.
+  - Generates a new JWT token using a valid refresh token.
+  - Ensures the user remains logged in without re-entering credentials.
 - **Response:**
   ```json
   {
-    "email": "...",
-    "tenantId": "...",
-    "companyName": "...",
-    "companyAddress": "...",
-    "name": "..."
+    "token": "newJwt",
+    "refreshToken": "newRefreshToken"
   }
   ```
 
 ---
 
-## 8. Accept Invite (Employee Registration)
-**POST** `/accept-invite`
+## 7. Logout
+**POST** `/logout`
 - **Body:**
   ```json
-  {
-    "token": "string",
-    "password": "string",
-    "name": "string (optional)"
-  }
+  { "refreshToken": "string" }
   ```
 - **Description:**
-  - Employee completes registration using invitation token received by email.
-  - Company name is shown and cannot be changed by employee.
-- **Response:**
-  ```json
-  {
-    "message": "Employee registered",
-    "user": { "id": "...", "email": "...", "role": "employee", "tenantId": "..." }
-  }
-  ```
+  - Invalidates the provided refresh token.
+  - Ensures the user is logged out securely.
+- **Response:** Success message if logout is successful.
 
 ---
 
-## ملاحظات هامة
-- جميع الردود في حال الخطأ ترجع رسالة واضحة (`message`).
-- OTP صالح لمرة واحدة فقط.
-- رابط الدعوة للموظف صالح لمدة يومين فقط.
-- لا يمكن للموظف تغيير اسم الشركة عند التسجيل عبر الدعوة.
-- يجب تفعيل البريد الإلكتروني للأدمن قبل تسجيل الدخول.
+## مراجعة منطق AUTH
+- **التسجيل (Register):**
+  - يتم تسجيل الأدمن فقط، مع إنشاء شركة (Tenant).
+  - يتم إرسال OTP إلى البريد الإلكتروني لتفعيل الحساب.
+
+- **تسجيل الدخول (Login):**
+  - يتم إصدار JWT وRefresh Token.
+  - يتم إرجاع معلومات المستخدم (id, name, email, role, tenantId).
+
+- **إعادة تعيين كلمة المرور (Forgot/Reset Password):**
+  - يتم إرسال OTP إلى البريد الإلكتروني لإعادة تعيين كلمة المرور.
+  - OTP صالح لمرة واحدة فقط.
+
+- **تحديث التوكن (Refresh Token):**
+  - يتيح للمستخدم البقاء مسجلاً دون الحاجة إلى إعادة تسجيل الدخول.
+
+- **تسجيل الخروج (Logout):**
+  - يضمن تسجيل الخروج الآمن عن طريق إبطال التوكن.

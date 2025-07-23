@@ -9,6 +9,7 @@ const verifyOtpController = require('../controllers/auth/verifyOtpController');
 const forgotPasswordController = require('../controllers/auth/forgotPasswordController');
 const resetPasswordController = require('../controllers/auth/resetPasswordController');
 const logoutController = require('../controllers/auth/logoutController');
+const refreshTokenController = require('../controllers/auth/refreshTokenController');
 
 const router = express.Router();
 
@@ -56,6 +57,12 @@ router.post('/reset-password',
 router.post('/logout',
   authenticate, 
   logoutController
+);
+
+router.post('/refresh-token',
+  body('refreshToken').notEmpty(),
+  validate,
+  refreshTokenController
 );
 
 module.exports = router;
