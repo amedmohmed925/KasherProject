@@ -4,6 +4,9 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const morgan = require('morgan');
 const { logRequests } = require('./middleware/logger');
+const rateLimit = require('express-rate-limit');
+const xss = require('xss-clean');
+const helmet = require('helmet');
 
 const adminRoutes = require('./routes/admin');
 const superAdminRoutes = require('./routes/superAdmin');
@@ -16,7 +19,27 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
 app.use(logRequests);
+app.use(xss());
+app.use(helmet());
 
+// Rate Limiting Middleware
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.'
+});
+
+// Custom Rate Limiting Middleware with Exceptions
+app.use((req, res, next) => {
+  // استثناء المسارات الخاصة بالمنتجات والسوبر أدمن
+  if (
+    req.path.startsWith('/api/admin/products') ||
+    req.path.startsWith('/api/superAdmin')
+  ) {
+    return next();
+  }
+  limiter(req, res, next);
+});
 
 // Routes
 app.use('/api/auth', authRoutes);
