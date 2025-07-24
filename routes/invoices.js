@@ -4,11 +4,11 @@ const { body } = require('express-validator');
 const validate = require('../middleware/validate');
 const addInvoiceController = require('../controllers/admin/invoices/addInvoiceController');
 const searchInvoicesController = require('../controllers/admin/invoices/searchInvoicesController');
+const getAllInvoicesController = require('../controllers/admin/invoices/getAllInvoicesController');
+const getInvoiceProfitController = require('../controllers/admin/invoices/getInvoiceProfitController');
+const getAllProfitsController = require('../controllers/admin/invoices/getAllProfitsController');
 
 const router = express.Router();
-
-
-
 
 // Add a new invoice
 router.post('/add-invoices',
@@ -25,7 +25,7 @@ router.post('/add-invoices',
 );
 
 // Search and filter invoices
-router.get('/invoices/search',
+router.get('/search',
   authenticate,
   authorize('admin'),
   [
@@ -35,6 +35,26 @@ router.get('/invoices/search',
   ],
   validate,
   searchInvoicesController
+);
+
+// Get all invoices
+router.get('/',
+  authenticate,
+  authorize('admin'),
+  getAllInvoicesController
+);
+// Get profit for a specific invoice
+router.get('/:id/profit',
+  authenticate,
+  authorize('admin'),
+  getInvoiceProfitController
+);
+
+// Get all profits
+router.get('/profits',
+  authenticate,
+  authorize('admin'),
+  getAllProfitsController
 );
 
 module.exports = router;

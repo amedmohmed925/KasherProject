@@ -4,6 +4,7 @@ const invoiceSchema = new mongoose.Schema({
   tenantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant', required: true },
   invoiceNumber: { type: String, required: true },
  
+ 
   customer: {
     name: { type: String, required: true },
     phone: { type: String }
