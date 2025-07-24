@@ -23,6 +23,28 @@ app.use(logRequests);
 app.use(xss());
 app.use(helmet());
 
+
+const checkSubscription = require('./middleware/checkSubscription');
+app.use((req, res, next) => {
+  const openPaths = [
+    '/api/auth',
+    '/api/admin/register',
+    '/api/admin/login',
+    '/api/admin/forgot-password',
+    '/api/admin/reset-password',
+    '/api/admin/verify-otp',
+    '/api/admin/send-otp',
+    '/api/admin/subscriptions/upload',
+    '/api/admin/subscriptions',
+
+    '/api/superAdmin'
+  ];
+  if (openPaths.some(path => req.path.startsWith(path))) {
+    return next();
+  }
+  checkSubscription(req, res, next);
+});
+
 // CSRF Protection Middleware
 const csrfProtection = csrf({
   cookie: true,
