@@ -7,16 +7,18 @@ const searchInvoicesController = require('../controllers/admin/invoices/searchIn
 
 const router = express.Router();
 
+
+
+
 // Add a new invoice
-router.post('/invoices',
+router.post('/add-invoices',
   authenticate,
   authorize('admin'),
   [
     body('products').isArray().withMessage('Products must be an array'),
-    body('products.*.productId').notEmpty().withMessage('Product ID is required'),
+    body('products.*.sku').notEmpty().withMessage('SKU is required'),
     body('products.*.quantity').isNumeric().withMessage('Quantity must be a number'),
-    body('customerName').optional().isString(),
-    body('totalPrice').isNumeric().withMessage('Total price must be a number')
+    body('customerName').optional().isString()
   ],
   validate,
   addInvoiceController

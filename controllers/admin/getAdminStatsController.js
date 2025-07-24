@@ -4,8 +4,6 @@ const Invoice = require('../../models/Invoice');
 module.exports = async (req, res) => {
   try {
     const tenantId = req.user.tenantId;
-    // عدد الموظفين
-    const employeesCount = await User.countDocuments({ tenantId, role: 'employee' });
     // عدد الفواتير
     const invoicesCount = await Invoice.countDocuments({ tenantId });
     // أرباح اليوم
@@ -32,8 +30,9 @@ module.exports = async (req, res) => {
       { $match: { tenantId, createdAt: { $gte: startOfYear, $lte: endOfYear } } },
       { $group: { _id: null, total: { $sum: '$totalAmount' } } }
     ]);
+    
+    
     res.json({
-      employeesCount,
       invoicesCount,
       todayProfit: todayProfit[0]?.total || 0,
       monthProfit: monthProfit[0]?.total || 0,

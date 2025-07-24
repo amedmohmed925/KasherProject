@@ -12,6 +12,7 @@ const csrf = require('csurf');
 const adminRoutes = require('./routes/admin');
 const superAdminRoutes = require('./routes/superAdmin');
 const authRoutes = require('./routes/auth');
+const invoicesRoutes = require('./routes/invoices');
 
 const app = express();
 
@@ -46,10 +47,10 @@ app.use((req, res, next) => {
 });
 
 // CSRF Protection Middleware
-const csrfProtection = csrf({
-  cookie: true,
-});
-app.use(csrfProtection);
+// const csrfProtection = csrf({
+//   cookie: true,
+// });
+// app.use(csrfProtection);
 
 // Rate Limiting Middleware
 const limiter = rateLimit({
@@ -74,8 +75,11 @@ app.use((req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/superAdmin', superAdminRoutes);
+app.use('/api/admin/invoices', invoicesRoutes );
+
 
 // Error handler
+
 app.use((err, req, res, next) => {
   res.status(500).json({ message: err.message || 'Internal Server Error' });
 });

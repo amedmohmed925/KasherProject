@@ -7,20 +7,26 @@ const mailSender = require('../../utils/mailSender');
 
 module.exports = async (req, res) => {
   try {
+    console.log('Received request body:', req.body);
     const { firstName, lastName, businessName, phone, email, password, confirmPassword } = req.body;
 
     if (!firstName || !lastName || !businessName || !phone || !email || !password || !confirmPassword) {
+      console.log('Validation failed: Missing fields');
       return res.status(400).json({ message: "All fields are required" });
     }
 
     if (password !== confirmPassword) {
+      console.log('Validation failed: Passwords do not match');
       return res.status(400).json({ message: "Passwords do not match" });
     }
 
     const exists = await User.findOne({ email });
-    if (exists) return res.status(400).json({ message: "Email already exists" });
+    if (exists) {
+      console.log('Validation failed: Email already exists');
+      return res.status(400).json({ message: "Email already exists" });
+    }
 
-    // إنشاء شركة جديدة
+    console.log('Creating tenant...');
     const tenant = new Tenant({
       name: businessName,
       address: "-",
@@ -29,7 +35,7 @@ module.exports = async (req, res) => {
     });
     await tenant.save();
 
-    // إنشاء الأدمن وربطه بالشركة
+    console.log('Creating user...');
     const hash = await bcrypt.hash(password, 10);
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const user = new User({
@@ -46,11 +52,11 @@ module.exports = async (req, res) => {
     });
     await user.save();
 
-    // ربط الأدمن بالـ tenant
+    console.log('Linking tenant with admin...');
     tenant.adminId = user._id;
     await tenant.save();
 
-    // إنشاء اشتراك تلقائي (تجربة مجانية 30 يوم)
+    console.log('Creating subscription...');
     const trialEnd = new Date();
     trialEnd.setDate(trialEnd.getDate() + 30);
     const subscription = new Subscription({
@@ -60,11 +66,12 @@ module.exports = async (req, res) => {
       startDate: new Date(),
       endDate: trialEnd,
       status: 'pending',
-      paymentConfirmed: false
+      paymentConfirmed: false,
+      duration: 'month'
     });
     await subscription.save();
 
-    // إرسال رمز التحقق
+    console.log('Sending verification email...');
     await mailSender(
       email,
       "رمز التحقق من البريد الإلكتروني",

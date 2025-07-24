@@ -15,14 +15,13 @@ const updateCategoryController = require('../controllers/admin/categories/update
 const getAllInvoicesController = require('../controllers/admin/invoices/getAllInvoicesController');
 const getAdminStatsController = require('../controllers/admin/getAdminStatsController');
 const analyticsController = require('../controllers/admin/dashboard/analyticsController');
+const searchProductsController = require('../controllers/admin/products/searchProductsController');
 
 const router = express.Router();
 
 // Get all categories
 router.get('/categories', authenticate, authorize('admin'), getCategoriesController);
 
-// Admin stats: invoices count, daily/monthly/yearly profits
-router.get('/stats', authenticate, authorize('admin'), getAdminStatsController);
 
 // Add category
 router.post('/categories',
@@ -32,6 +31,9 @@ router.post('/categories',
   validate,
   addCategoryController
 );
+
+// Admin stats: invoices count, daily/monthly/yearly profits
+router.get('/stats', authenticate, authorize('admin'), getAdminStatsController);
 
 // Get all invoices with full details
 router.get('/all-invoices', authenticate, authorize('admin'), getAllInvoicesController);
@@ -79,6 +81,8 @@ router.put('/products/:id',
   updateProduct
 );
 
+// Search products
+router.get('/products/search', authenticate, authorize('admin'), searchProductsController);
 // Delete product
 router.delete('/products/:id', authenticate, authorize('admin'), deleteProduct);
 
@@ -88,5 +92,6 @@ router.get('/reports', authenticate, authorize('admin'), generateReport);
 
 // Dashboard Analytics
 router.get('/dashboard/analytics', authenticate, authorize('admin'), analyticsController);
+
 
 module.exports = router;

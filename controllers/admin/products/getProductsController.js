@@ -2,6 +2,9 @@ const Product = require('../../../models/Product');
 
 module.exports = async (req, res) => {
   try {
+    console.log('Authenticated user:', req.user);
+    console.log('Fetching products for tenantId:', req.user.tenantId);
+
     const products = await Product.find({ tenantId: req.user.tenantId });
     res.json(products);
   } catch (err) {

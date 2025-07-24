@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const invoiceSchema = new mongoose.Schema({
   tenantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant', required: true },
   invoiceNumber: { type: String, required: true },
-  employeeId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+ 
   customer: {
     name: { type: String, required: true },
     phone: { type: String }
