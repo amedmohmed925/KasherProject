@@ -1,6 +1,6 @@
-const Subscription = require('../../models/Subscription');
-const Tenant = require('../../models/Tenant');
-const User = require('../../models/User');
+const Subscription = require('../../../models/Subscription');
+const Tenant = require('../../../models/Tenant');
+const User = require('../../../models/User');
 
 // Get all subscriptions with tenant and admin info
 module.exports = async (req, res) => {

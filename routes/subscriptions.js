@@ -9,6 +9,8 @@ const uploadSubscriptionReceiptController = require('../controllers/admin/upload
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
 
+const router = express.Router();
+
 router.post('/subscriptions/upload',
   authenticate,
   authorize('admin'),
@@ -23,16 +25,13 @@ router.post('/subscriptions/upload',
   uploadSubscriptionReceiptController
 );
 
-const router = express.Router();
+
+router.get('/', authenticate, authorize('superAdmin'), listSubscriptionsController);
 
 
-router.get('/subscriptions', authenticate, authorize('superAdmin'), listSubscriptionsController);
-
-
-router.post('/subscriptions/approve',
+router.post('/:subscriptionId/approve',
   authenticate,
   authorize('superAdmin'),
-  body('subscriptionId').notEmpty(),
   body('status').isIn(['approved', 'rejected']),
   body('rejectionReason').if(body('status').equals('rejected')).notEmpty().withMessage('Rejection reason is required for rejected status'),
   validate,

@@ -213,3 +213,14 @@
 {"level":"info","message":{"body":{"customerName":"John Doe","products":[{"quantity":2,"sku":"SP1234ds5"},{"quantity":1,"sku":"SP1234ds5SAD"}]},"method":"GET","url":"/api/admin/invoices/68822c0118f0af29aae8e212/profit","user":null},"timestamp":"2025-07-24T14:26:41.508Z"}
 {"level":"info","message":{"body":{"customerName":"John Doe","products":[{"quantity":2,"sku":"SP1234ds5"},{"quantity":1,"sku":"SP1234ds5SAD"}]},"method":"GET","url":"/api/admin/invoices/68822c0118f0af29aae8e212/profit","user":null},"timestamp":"2025-07-24T14:28:14.210Z"}
 {"level":"info","message":{"body":{"customerName":"John Doe","products":[{"quantity":2,"sku":"SP1234ds5"},{"quantity":1,"sku":"SP1234ds5SAD"}]},"method":"GET","url":"/api/admin/invoices/profits","user":null},"timestamp":"2025-07-24T14:30:53.322Z"}
+{"level":"info","message":{"body":{"customerName":"John Doe","products":[{"quantity":2,"sku":"SP1234ds5"},{"quantity":1,"sku":"SP1234ds5SAD"}]},"method":"GET","url":"/api/admin/invoices/profits","user":null},"timestamp":"2025-07-24T15:16:09.086Z"}
+{"level":"info","message":{"body":{},"method":"GET","url":"/api/subscriptions","user":null},"timestamp":"2025-07-24T15:16:58.343Z"}
+{"level":"info","message":{"body":{},"method":"GET","url":"/api/subscriptions","user":null},"timestamp":"2025-07-24T15:17:46.615Z"}
+{"level":"info","message":{"body":{"status":"approved"},"method":"POST","url":"/api/subscriptions/687bc08b15cebd664152625f/approve","user":null},"timestamp":"2025-07-24T15:24:15.377Z"}
+{"level":"info","message":{"body":{"status":"approved"},"method":"POST","url":"/api/subscriptions/687bc08b15cebd664152625f/approve","user":null},"timestamp":"2025-07-24T15:25:09.979Z"}
+{"level":"info","message":{"body":{"status":"approved"},"method":"POST","url":"/api/subscriptions/687bc08b15cebd664152625f/approve","user":null},"timestamp":"2025-07-24T15:25:31.841Z"}
+{"level":"info","message":{"body":{"status":"approved"},"method":"POST","url":"/api/subscriptions/687bc08b15cebd664152625f/approve","user":null},"timestamp":"2025-07-24T15:26:49.015Z"}
+{"level":"info","message":{"body":{"email":"amedmohmed925@gmail.com","password":"newpassword123"},"method":"POST","url":"/api/auth/login","user":null},"timestamp":"2025-07-24T15:27:00.300Z"}
+{"level":"info","message":{"body":{"status":"approved"},"method":"POST","url":"/api/subscriptions/687bc08b15cebd664152625f/approve","user":null},"timestamp":"2025-07-24T15:27:17.872Z"}
+{"level":"info","message":{"body":{"rejectionReason":"Invalid payment details","status":"rejected"},"method":"POST","url":"/api/subscriptions/6881f8ac5cdb88250361e946/approve","user":null},"timestamp":"2025-07-24T15:28:02.383Z"}
+{"level":"info","message":{"body":{"rejectionReason":"Invalid payment details","status":"rejected"},"method":"POST","url":"/api/subscriptions/6881f8ac5cdb88250361e946/approve","user":null},"timestamp":"2025-07-24T15:29:24.276Z"}

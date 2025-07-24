@@ -5,7 +5,8 @@ const mailSender = require('../../../utils/mailSender');
 
 module.exports = async (req, res) => {
   try {
-    const { subscriptionId, status, rejectionReason } = req.body;
+    const { status, rejectionReason } = req.body;
+    const { subscriptionId } = req.params;
 
     // التحقق من الحالة
     if (!['approved', 'rejected'].includes(status)) {
@@ -34,28 +35,37 @@ module.exports = async (req, res) => {
       return res.status(403).json({ message: 'Forbidden: Super Admin access required' });
     }
 
-    // تحديث حالة الاشتراك
-    subscription.status = status;
-    subscription.paymentConfirmed = status === 'approved';
+    
+    // تحديث حالة الاشتراك فقط دون التحقق من الحقول الأخرى
+    subscription.set({
+      status,
+      paymentConfirmed: status === 'approved'
+    });
     await subscription.save();
 
-    // إرسال إيميل في حالة الرفض
+
     if (status === 'rejected') {
       const admin = await User.findOne({ tenantId: subscription.tenantId, role: 'admin' });
-      if (admin) {
+      if (admin && admin.email) {
         await mailSender(
           admin.email,
           'حالة طلب الاشتراك',
           `<h1>طلب الاشتراك</h1><p>تم رفض طلب الاشتراك الخاص بك. السبب: ${rejectionReason}</p><p>يرجى التواصل مع فريق الدعم لمزيد من التفاصيل.</p>`
         );
+      } else {
+        console.warn('Admin email not defined, skipping email to admin.');
       }
 
-      // إرسال إيميل للمسؤول عن الرفض بدلاً من استخدام messagingSystem
-      await mailSender(
-        tenant.adminEmail, // البريد الإلكتروني للمسؤول
-        'رفض الاشتراك',
-        `تم رفض اشتراكك بسبب: ${rejectionReason}`
-      );
+      
+      if (tenant.adminEmail) {
+        await mailSender(
+          tenant.adminEmail, // البريد الإلكتروني للمسؤول
+          'رفض الاشتراك',
+          `تم رفض اشتراكك بسبب: ${rejectionReason}`
+        );
+      } else {
+        console.warn('Tenant admin email not defined, skipping email to tenant admin.');
+      }
     }
 
     res.status(200).json({ message: `Subscription ${status} successfully` });

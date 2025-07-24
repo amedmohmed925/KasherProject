@@ -13,6 +13,7 @@ const adminRoutes = require('./routes/admin');
 const superAdminRoutes = require('./routes/superAdmin');
 const authRoutes = require('./routes/auth');
 const invoicesRoutes = require('./routes/invoices');
+const subscriptionsRoutes = require('./routes/subscriptions');
 
 const app = express();
 
@@ -76,6 +77,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/superAdmin', superAdminRoutes);
 app.use('/api/admin/invoices', invoicesRoutes );
+app.use('/api/subscriptions',  subscriptionsRoutes);
 
 
 // Error handler

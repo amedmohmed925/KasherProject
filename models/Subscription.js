@@ -9,8 +9,9 @@ const subscriptionSchema = new mongoose.Schema({
   status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
   paymentConfirmed: { type: Boolean, default: false },
   receiptImage: { type: String },
-  paidAmountText: { type: String },  duration: { type: String, enum: ['month', 'year', 'custom'], required: true }, 
-  customNotes: { type: String }, 
+  paidAmountText: { type: String },
+  duration: { type: String, enum: ['month', 'year', 'custom'] },
+  customNotes: { type: String },
   receiptFileName: { type: String },
   createdAt: { type: Date, default: Date.now }
 });
