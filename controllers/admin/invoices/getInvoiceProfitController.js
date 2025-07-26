@@ -6,7 +6,7 @@ module.exports = async (req, res) => {
   try {
     const { id } = req.params;
     const invoice = await Invoice.findById(id);
-    if (!invoice || invoice.tenantId.toString() !== req.user.tenantId.toString()) {
+    if (!invoice || invoice.adminId.toString() !== req.user._id.toString()) {
       return res.status(404).json({ message: 'Invoice not found' });
     }
     let totalOriginal = 0;

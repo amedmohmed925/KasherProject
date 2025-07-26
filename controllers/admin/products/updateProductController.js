@@ -5,7 +5,7 @@ module.exports = async (req, res) => {
     const { id } = req.params;
     const { name, sku, originalPrice, sellingPrice, quantity, categoryId } = req.body;
     const product = await Product.findOneAndUpdate(
-      { _id: id, tenantId: req.user.tenantId },
+      { _id: id, adminId: req.user._id },
       { name, sku, originalPrice, sellingPrice, quantity, categoryId },
       { new: true }
     );

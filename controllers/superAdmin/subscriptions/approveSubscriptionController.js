@@ -1,6 +1,5 @@
 const Subscription = require('../../../models/Subscription');
 const User = require('../../../models/User');
-const Tenant = require('../../../models/Tenant');
 const mailSender = require('../../../utils/mailSender');
 
 module.exports = async (req, res) => {
@@ -24,18 +23,11 @@ module.exports = async (req, res) => {
       return res.status(404).json({ message: 'Subscription not found' });
     }
 
-    // التحقق من حالة الـ tenant
-    const tenant = await Tenant.findById(subscription.tenantId);
-    if (!tenant) {
-      return res.status(404).json({ message: 'Tenant not found' });
-    }
-
     // التحقق إن المستخدم سوبر أدمن
     if (req.user.role !== 'superAdmin') {
       return res.status(403).json({ message: 'Forbidden: Super Admin access required' });
     }
 
-    
     // تحديث حالة الاشتراك فقط دون التحقق من الحقول الأخرى
     subscription.set({
       status,
@@ -45,7 +37,7 @@ module.exports = async (req, res) => {
 
 
     if (status === 'rejected') {
-      const admin = await User.findOne({ tenantId: subscription.tenantId, role: 'admin' });
+      const admin = await User.findOne({ _id: subscription.adminId, role: 'admin' });
       if (admin && admin.email) {
         await mailSender(
           admin.email,
@@ -54,17 +46,6 @@ module.exports = async (req, res) => {
         );
       } else {
         console.warn('Admin email not defined, skipping email to admin.');
-      }
-
-      
-      if (tenant.adminEmail) {
-        await mailSender(
-          tenant.adminEmail, // البريد الإلكتروني للمسؤول
-          'رفض الاشتراك',
-          `تم رفض اشتراكك بسبب: ${rejectionReason}`
-        );
-      } else {
-        console.warn('Tenant admin email not defined, skipping email to tenant admin.');
       }
     }
 

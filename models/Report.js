@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const reportSchema = new mongoose.Schema({
-  tenantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant', required: true },
+  adminId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   type: { type: String, enum: ['daily', 'monthly', 'yearly'], required: true },
   period: { type: String, required: true },
   totalSales: { type: Number, required: true },

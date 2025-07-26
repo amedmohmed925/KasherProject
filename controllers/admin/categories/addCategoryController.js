@@ -14,7 +14,7 @@ module.exports = async (req, res) => {
 
     const category = new Category({
       name,
-      tenantId: req.user.tenantId
+      adminId: req.user._id
     });
     console.log('Creating category:', category);
 

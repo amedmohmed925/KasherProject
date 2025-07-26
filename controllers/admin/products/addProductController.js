@@ -2,30 +2,29 @@ const Product = require('../../../models/Product');
 
 module.exports = async (req, res) => {
   try {
-    const { name, sku, originalPrice, sellingPrice, quantity, categoryId } = req.body;
+    const { name, sku, originalPrice, sellingPrice, quantity, category, description, image } = req.body;
     if (req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Unauthorized' });
     }
-    if (!name || !sku || !originalPrice || !sellingPrice || !quantity || !categoryId) {
-      return res.status(400).json({ message: 'All fields are required' });
+    if (!name || !sku || !originalPrice || !sellingPrice || !quantity) {
+      return res.status(400).json({ message: 'All required fields must be provided' });
     }
-    const exists = await Product.findOne({ tenantId: req.user.tenantId, sku });
-    if (exists) return res.status(400).json({ message: 'SKU already exists' });
+
     const product = new Product({
-      tenantId: req.user.tenantId,
+      adminId: req.user._id,
       name,
       sku,
       originalPrice,
       sellingPrice,
       quantity,
-      categoryId
+      category,
+      description,
+      image
     });
+
     await product.save();
     res.status(201).json({ message: 'Product created', product });
   } catch (err) {
-    if (err.code === 11000) {
-      return res.status(400).json({ message: 'SKU must be unique within your company' });
-    }
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 };

@@ -3,7 +3,7 @@ const Invoice = require('../../models/Invoice');
 module.exports = async (req, res) => {
   try {
     const { type, startDate, endDate } = req.query;
-    const match = { tenantId: req.user.tenantId };
+    const match = { adminId: req.user._id };
     if (startDate && endDate) {
       match.createdAt = { $gte: new Date(startDate), $lte: new Date(endDate) };
     }

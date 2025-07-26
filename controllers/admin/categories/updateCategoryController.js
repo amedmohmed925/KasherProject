@@ -6,7 +6,7 @@ module.exports = async (req, res) => {
     const { name } = req.body;
     if (!name) return res.status(400).json({ message: 'Category name is required' });
     const category = await Category.findOneAndUpdate(
-      { _id: id, tenantId: req.user.tenantId },
+      { _id: id, adminId: req.user._id },
       { name },
       { new: true }
     );

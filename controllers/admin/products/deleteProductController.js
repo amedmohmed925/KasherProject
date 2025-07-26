@@ -6,7 +6,7 @@ module.exports = async (req, res) => {
     const { id } = req.params;
     const product = await Product.findById(id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
-    if (req.user.role !== 'admin' || req.user.tenantId.toString() !== product.tenantId.toString()) {
+    if (req.user.role !== 'admin' || req.user._id.toString() !== product.adminId.toString()) {
       return res.status(403).json({ message: 'Unauthorized' });
     }
     // Check if product is used in invoices

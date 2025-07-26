@@ -36,7 +36,7 @@ module.exports = async (req, res) => {
 
     // توليد توكن JWT
     const token = jwt.sign(
-      { id: user._id, role: user.role, tenantId: user.tenantId },
+      { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );

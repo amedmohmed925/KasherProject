@@ -3,7 +3,7 @@ const Invoice = require('../../models/Invoice');
 module.exports = async (req, res) => {
   try {
     if (req.user.role !== 'superAdmin') return res.status(403).json({ message: 'Forbidden' });
-    // Aggregate data from all tenants
+    // Aggregate data from all invoices
     const report = await Invoice.aggregate([
       { $unwind: '$items' },
       { $group: {
@@ -21,6 +21,6 @@ module.exports = async (req, res) => {
     ]);
     res.json(report);
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 };

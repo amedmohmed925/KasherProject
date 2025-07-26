@@ -224,3 +224,14 @@
 {"level":"info","message":{"body":{"status":"approved"},"method":"POST","url":"/api/subscriptions/687bc08b15cebd664152625f/approve","user":null},"timestamp":"2025-07-24T15:27:17.872Z"}
 {"level":"info","message":{"body":{"rejectionReason":"Invalid payment details","status":"rejected"},"method":"POST","url":"/api/subscriptions/6881f8ac5cdb88250361e946/approve","user":null},"timestamp":"2025-07-24T15:28:02.383Z"}
 {"level":"info","message":{"body":{"rejectionReason":"Invalid payment details","status":"rejected"},"method":"POST","url":"/api/subscriptions/6881f8ac5cdb88250361e946/approve","user":null},"timestamp":"2025-07-24T15:29:24.276Z"}
+{"level":"info","message":{"body":{},"method":"GET","url":"/api/subscriptions","user":null},"timestamp":"2025-07-25T14:39:14.150Z"}
+{"level":"info","message":{"body":{"email":"amedmohmed925@gmail.com","password":"newpassword123"},"method":"POST","url":"/api/auth/login","user":null},"timestamp":"2025-07-25T14:39:29.434Z"}
+{"level":"info","message":{"body":{},"method":"GET","url":"/api/subscriptions","user":null},"timestamp":"2025-07-25T14:39:58.373Z"}
+{"level":"info","message":{"body":{},"method":"POST","url":"/api/subscriptions/approve","user":null},"timestamp":"2025-07-25T14:40:17.113Z"}
+{"level":"info","message":{"body":{},"method":"POST","url":"/api/subscriptions/approve","user":null},"timestamp":"2025-07-25T14:40:22.260Z"}
+{"level":"info","message":{"body":{},"method":"GET","url":"/api/subscriptions","user":null},"timestamp":"2025-07-25T14:48:03.157Z"}
+{"level":"info","message":{"body":{},"method":"GET","url":"/api/subscriptions","user":null},"timestamp":"2025-07-25T14:49:09.672Z"}
+{"level":"info","message":{"body":{"email":"amedmohmed925@gmail.com","password":"newpassword123"},"method":"POST","url":"/api/auth/login","user":null},"timestamp":"2025-07-25T18:11:12.865Z"}
+{"level":"info","message":{"body":{"name":"Food 2"},"method":"POST","url":"/api/admin/categories","user":null},"timestamp":"2025-07-25T18:11:55.831Z"}
+{"level":"info","message":{"body":{"name":"Food 2"},"method":"POST","url":"/api/admin/categories","user":null},"timestamp":"2025-07-25T18:14:09.205Z"}
+{"level":"info","message":{"body":{},"method":"GET","url":"/api/admin/admin/687bc08b15cebd664152625c","user":null},"timestamp":"2025-07-25T18:20:25.126Z"}

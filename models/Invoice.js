@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const invoiceSchema = new mongoose.Schema({
-  tenantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant', required: true },
+  adminId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   invoiceNumber: { type: String, required: true },
  
  
@@ -23,6 +23,6 @@ const invoiceSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-invoiceSchema.index({ tenantId: 1, invoiceNumber: 1 }, { unique: true });
+invoiceSchema.index({ adminId: 1, invoiceNumber: 1 }, { unique: true });
 
 module.exports = mongoose.model('Invoice', invoiceSchema);

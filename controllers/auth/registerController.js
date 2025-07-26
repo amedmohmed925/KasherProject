@@ -1,6 +1,4 @@
 const User = require('../../models/User');
-const Tenant = require('../../models/Tenant');
-const Subscription = require('../../models/Subscription');
 const bcrypt = require('bcryptjs');
 const mailSender = require('../../utils/mailSender');
 
@@ -8,9 +6,9 @@ const mailSender = require('../../utils/mailSender');
 module.exports = async (req, res) => {
   try {
     console.log('Received request body:', req.body);
-    const { firstName, lastName, businessName, phone, email, password, confirmPassword } = req.body;
+    const { firstName, lastName, phone, email, password, confirmPassword } = req.body;
 
-    if (!firstName || !lastName || !businessName || !phone || !email || !password || !confirmPassword) {
+    if (!firstName || !lastName || !phone || !email || !password || !confirmPassword) {
       console.log('Validation failed: Missing fields');
       return res.status(400).json({ message: "All fields are required" });
     }
@@ -26,50 +24,20 @@ module.exports = async (req, res) => {
       return res.status(400).json({ message: "Email already exists" });
     }
 
-    console.log('Creating tenant...');
-    const tenant = new Tenant({
-      name: businessName,
-      address: "-",
-      phone: phone,
-      createdAt: new Date()
-    });
-    await tenant.save();
-
     console.log('Creating user...');
     const hash = await bcrypt.hash(password, 10);
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const user = new User({
-      name: `${firstName} ${lastName}`,
+      firstName,
+      lastName,
       email,
       password: hash,
       role: 'admin',
-      tenantId: tenant._id,
-      companyName: tenant.name,
-      companyAddress: tenant.address,
       phone,
       isVerified: false,
       otp
     });
     await user.save();
-
-    console.log('Linking tenant with admin...');
-    tenant.adminId = user._id;
-    await tenant.save();
-
-    console.log('Creating subscription...');
-    const trialEnd = new Date();
-    trialEnd.setDate(trialEnd.getDate() + 30);
-    const subscription = new Subscription({
-      tenantId: tenant._id,
-      plan: 'trial',
-      price: 0,
-      startDate: new Date(),
-      endDate: trialEnd,
-      status: 'pending',
-      paymentConfirmed: false,
-      duration: 'month'
-    });
-    await subscription.save();
 
     console.log('Sending verification email...');
     await mailSender(

@@ -10,6 +10,6 @@ module.exports = async (req, res) => {
     await user.save();
     res.json(user);
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 };

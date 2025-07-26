@@ -1,5 +1,6 @@
 const express = require('express');
 const { authenticate, authorize } = require('../middleware/auth');
+const checkSubscription = require('../middleware/checkSubscription');
 const addProduct = require('../controllers/admin/products/addProductController');
 const getProducts = require('../controllers/admin/products/getProductsController');
 const deleteProduct = require('../controllers/admin/products/deleteProductController');
@@ -16,47 +17,48 @@ const getAllInvoicesController = require('../controllers/admin/invoices/getAllIn
 const getAdminStatsController = require('../controllers/admin/getAdminStatsController');
 const analyticsController = require('../controllers/admin/dashboard/analyticsController');
 const searchProductsController = require('../controllers/admin/products/searchProductsController');
+const getAdminByIdController = require('../controllers/admin/getAdminByIdController');
 
 const router = express.Router();
 
-// Get all categories
-router.get('/categories', authenticate, authorize('admin'), getCategoriesController);
+// Middleware مشترك لجميع routes الأدمن (authentication + subscription check)
+const adminMiddleware = [authenticate, authorize('admin'), checkSubscription];
+const adminSuperAdminMiddleware = [authenticate, authorize('admin', 'superAdmin')];
 
+// Get all categories
+router.get('/categories', ...adminMiddleware, getCategoriesController);
 
 // Add category
 router.post('/categories',
-  authenticate,
-  authorize('admin'),
+  ...adminSuperAdminMiddleware,
   body('name').notEmpty(),
   validate,
   addCategoryController
 );
 
 // Admin stats: invoices count, daily/monthly/yearly profits
-router.get('/stats', authenticate, authorize('admin'), getAdminStatsController);
+router.get('/stats', ...adminMiddleware, getAdminStatsController);
 
 // Get all invoices with full details
-router.get('/all-invoices', authenticate, authorize('admin'), getAllInvoicesController);
+router.get('/all-invoices', ...adminMiddleware, getAllInvoicesController);
 
 // Update category
 router.put('/categories/:id',
-  authenticate,
-  authorize('admin'),
+  ...adminMiddleware,
   body('name').notEmpty(),
   validate,
   updateCategoryController
 );
 
 // Delete category
-router.delete('/categories/:id', authenticate, authorize('admin'), deleteCategoryController);
+router.delete('/categories/:id', ...adminMiddleware, deleteCategoryController);
 
 // Get all products
-router.get('/products', authenticate, authorize('admin'), getProducts);
+router.get('/products', ...adminMiddleware, getProducts);
 
 // Add product
 router.post('/products',
-  authenticate,
-  authorize('admin'),
+  ...adminMiddleware,
   body('name').notEmpty(),
   body('sku').notEmpty(),
   body('originalPrice').isNumeric(),
@@ -69,8 +71,7 @@ router.post('/products',
 
 // Update product
 router.put('/products/:id',
-  authenticate,
-  authorize('admin'),
+  ...adminMiddleware,
   body('name').notEmpty(),
   body('sku').notEmpty(),
   body('originalPrice').isNumeric(),
@@ -82,16 +83,19 @@ router.put('/products/:id',
 );
 
 // Search products
-router.get('/products/search', authenticate, authorize('admin'), searchProductsController);
+router.get('/products/search', ...adminMiddleware, searchProductsController);
 // Delete product
-router.delete('/products/:id', authenticate, authorize('admin'), deleteProduct);
+router.delete('/products/:id', ...adminMiddleware, deleteProduct);
 
 // فواتير البيع وإدارتها للأدمن فقط
-router.get('/invoices', authenticate, authorize('admin'), listInvoices);
-router.get('/reports', authenticate, authorize('admin'), generateReport);
+router.get('/invoices', ...adminMiddleware, listInvoices);
+router.get('/reports', ...adminMiddleware, generateReport);
 
 // Dashboard Analytics
-router.get('/dashboard/analytics', authenticate, authorize('admin'), analyticsController);
+router.get('/dashboard/analytics', ...adminMiddleware, analyticsController);
+
+// Get admin by ID
+router.get('/admin/:id', ...adminSuperAdminMiddleware, getAdminByIdController);
 
 
 module.exports = router;

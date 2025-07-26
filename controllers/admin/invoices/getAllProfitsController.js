@@ -3,7 +3,7 @@ const Product = require('../../../models/Product');
 
 module.exports = async (req, res) => {
   try {
-    const invoices = await Invoice.find({ tenantId: req.user.tenantId });
+    const invoices = await Invoice.find({ adminId: req.user._id });
     const results = [];
     let totalOriginal = 0;
     let totalSelling = 0;

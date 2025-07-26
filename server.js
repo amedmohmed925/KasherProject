@@ -14,6 +14,7 @@ const superAdminRoutes = require('./routes/superAdmin');
 const authRoutes = require('./routes/auth');
 const invoicesRoutes = require('./routes/invoices');
 const subscriptionsRoutes = require('./routes/subscriptions');
+const inventoryRoutes = require('./routes/inventory');
 
 const app = express();
 
@@ -27,24 +28,21 @@ app.use(helmet());
 
 
 const checkSubscription = require('./middleware/checkSubscription');
+
+// Middleware عام لفحص المسارات المفتوحة 
 app.use((req, res, next) => {
   const openPaths = [
     '/api/auth',
-    '/api/admin/register',
-    '/api/admin/login',
-    '/api/admin/forgot-password',
-    '/api/admin/reset-password',
-    '/api/admin/verify-otp',
-    '/api/admin/send-otp',
-    '/api/admin/subscriptions/upload',
-    '/api/admin/subscriptions',
-
-    '/api/superAdmin'
+    '/api/superAdmin'  // السوبر أدمن لا يحتاج subscription check
   ];
+  
+  // المسارات المفتوحة تمر مباشرة
   if (openPaths.some(path => req.path.startsWith(path))) {
     return next();
   }
-  checkSubscription(req, res, next);
+  
+  // باقي المسارات ستتم معالجتها في الـ routes نفسها
+  next();
 });
 
 // CSRF Protection Middleware
@@ -76,8 +74,9 @@ app.use((req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/superAdmin', superAdminRoutes);
-app.use('/api/admin/invoices', invoicesRoutes );
-app.use('/api/subscriptions',  subscriptionsRoutes);
+app.use('/api/admin/invoices', invoicesRoutes);
+app.use('/api/subscriptions', subscriptionsRoutes);
+app.use('/api/inventory', inventoryRoutes);
 
 
 // Error handler

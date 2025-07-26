@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema({
-  tenantId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tenant', required: true },
+  adminId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   name: { type: String, required: true },
   sku: { type: String, required: true },
   originalPrice: { type: Number, required: true },
@@ -14,6 +14,6 @@ const productSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
-productSchema.index({ tenantId: 1, sku: 1 }, { unique: true });
+productSchema.index({ adminId: 1, sku: 1 }, { unique: true });
 
 module.exports = mongoose.model('Product', productSchema);

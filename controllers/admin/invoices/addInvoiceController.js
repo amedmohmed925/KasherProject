@@ -32,7 +32,7 @@ const addInvoiceController = async (req, res) => {
 
     // إنشاء الفاتورة
     const invoice = new Invoice({
-      tenantId: req.user.tenantId,
+      adminId: req.user._id,
       invoiceNumber,
       customer: {
         name: customerName

@@ -1,5 +1,6 @@
 const express = require('express');
 const { authenticate, authorize } = require('../middleware/auth');
+const checkSubscription = require('../middleware/checkSubscription');
 const { body } = require('express-validator');
 const validate = require('../middleware/validate');
 const addInvoiceController = require('../controllers/admin/invoices/addInvoiceController');
@@ -10,10 +11,12 @@ const getAllProfitsController = require('../controllers/admin/invoices/getAllPro
 
 const router = express.Router();
 
+// Middleware مشترك للفواتير
+const adminMiddleware = [authenticate, authorize('admin'), checkSubscription];
+
 // Add a new invoice
 router.post('/add-invoices',
-  authenticate,
-  authorize('admin'),
+  ...adminMiddleware,
   [
     body('products').isArray().withMessage('Products must be an array'),
     body('products.*.sku').notEmpty().withMessage('SKU is required'),
@@ -26,8 +29,7 @@ router.post('/add-invoices',
 
 // Search and filter invoices
 router.get('/search',
-  authenticate,
-  authorize('admin'),
+  ...adminMiddleware,
   [
     body('customerName').optional().isString(),
     body('price').optional().isNumeric(),
@@ -39,21 +41,19 @@ router.get('/search',
 
 // Get all invoices
 router.get('/',
-  authenticate,
-  authorize('admin'),
+  ...adminMiddleware,
   getAllInvoicesController
 );
+
 // Get profit for a specific invoice
-router.get('/:id/profit',
-  authenticate,
-  authorize('admin'),
+router.get('/profit/:id',
+  ...adminMiddleware,
   getInvoiceProfitController
 );
 
 // Get all profits
 router.get('/profits',
-  authenticate,
-  authorize('admin'),
+  ...adminMiddleware,
   getAllProfitsController
 );
 

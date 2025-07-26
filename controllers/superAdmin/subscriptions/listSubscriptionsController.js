@@ -1,13 +1,12 @@
 const Subscription = require('../../../models/Subscription');
-const Tenant = require('../../../models/Tenant');
 const User = require('../../../models/User');
 
-// Get all subscriptions with tenant and admin info
+// Get all subscriptions with admin info
 module.exports = async (req, res) => {
   try {
-    const subs = await Subscription.find().populate('tenantId');
+    const subs = await Subscription.find({ adminId: req.user._id });
     const result = await Promise.all(subs.map(async (sub) => {
-      const admin = await User.findOne({ tenantId: sub.tenantId._id, role: 'admin' });
+      const admin = await User.findOne({ _id: sub.adminId, role: 'admin' });
       return {
         subscription: {
           id: sub._id,
@@ -24,7 +23,6 @@ module.exports = async (req, res) => {
           receiptFileName: sub.receiptFileName,
           createdAt: sub.createdAt
         },
-        tenant: sub.tenantId,
         admin: admin ? {
           id: admin._id,
           name: admin.name,
@@ -37,6 +35,6 @@ module.exports = async (req, res) => {
     }));
     res.json(result);
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error', error: err.message });
   }
 };
