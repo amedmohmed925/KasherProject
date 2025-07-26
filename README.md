@@ -7,7 +7,101 @@
 2. إصلاح JWT token ليتضمن `adminId` فقط
 3. توحيد جميع العمليات لتستخدم `adminId`
 
-### 🚀 **النظام بعد الإصلاح - جميع Endpoints تعمل بشكل صحيح**
+### 🚀### 2.5 قائمة الفواتير مع فلترة
+```http
+GET /api/admin/invoices/list?page=1&limit=10&date=2024-01-01
+Authorization: Bearer <token>
+```
+
+### 2.6 إدارة الملف الشخصي
+
+#### جلب بيانات الملف الشخصي
+```http
+GET /api/admin/profile
+Authorization: Bearer <token>
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "admin": {
+    "id": "507f1f77bcf86cd799439011",
+    "firstName": "محمد",
+    "lastName": "أحمد",
+    "companyName": "متجر الأمانة",
+    "companyAddress": "شارع الجامعة، القاهرة، مصر",
+    "email": "admin@example.com",
+    "phone": "01234567890",
+    "role": "admin",
+    "isVerified": true,
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  }
+}
+```
+
+#### تحديث الملف الشخصي
+```http
+PUT /api/admin/profile
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "firstName": "محمد محدث",
+  "lastName": "أحمد محدث", 
+  "companyName": "متجر الأمانة المحدث",
+  "companyAddress": "العنوان الجديد",
+  "phone": "01987654321",
+  "currentPassword": "oldpassword123", // مطلوب فقط لتغيير كلمة المرور
+  "newPassword": "newpassword123" // اختياري
+}
+```
+
+### 2.7 التحليلات المتقدمة
+
+#### تحليلات متقدمة مع فلاتر
+```http
+GET /api/admin/analytics/advanced?period=month&startDate=2024-01-01&endDate=2024-12-31
+Authorization: Bearer <token>
+```
+
+**المعايير المتاحة:**
+- `period`: week | month | year (افتراضي: month)
+- `startDate`, `endDate`: نطاق تاريخ مخصص
+
+**Response:**
+```json
+{
+  "success": true,
+  "period": "month",
+  "dateRange": {
+    "$gte": "2024-01-01T00:00:00.000Z",
+    "$lte": "2024-12-31T23:59:59.999Z"
+  },
+  "invoiceStats": {
+    "totalInvoices": 150,
+    "totalRevenue": 75000.00,
+    "averageInvoiceValue": 500.00
+  },
+  "inventoryStats": {
+    "totalProducts": 200,
+    "totalQuantity": 5000,
+    "totalValue": 125000.00,
+    "lowStockProducts": 15,
+    "outOfStockProducts": 3
+  },
+  "topProducts": [
+    {
+      "_id": "productId",
+      "productName": "حليب نادك",
+      "totalSold": 100,
+      "totalRevenue": 700.00
+    }
+  ],
+  "categoryStats": [...],
+  "dailySales": [...]
+}
+```نظام بعد الإصلاح - جميع Endpoints تعمل بشكل صحيح**
 
 ---
 
@@ -184,25 +278,83 @@ Authorization: Bearer <token>
 }
 ```
 
-### 2.2 جلب بيانات أدمن بالـ ID
-```http
-GET /api/admin/admin/:id
-Authorization: Bearer <token>
-```
-
-### 2.3 إحصائيات لوحة التحكم المتقدمة
+### 2.2 إحصائيات لوحة التحكم المتقدمة
 ```http
 GET /api/admin/dashboard/analytics
 Authorization: Bearer <token>
 ```
 
-### 2.4 تقارير مخصصة
+### 2.3 تحليلات متقدمة مع فلاتر
+```http
+GET /api/admin/analytics/advanced?period=month&startDate=2024-01-01&endDate=2024-12-31
+Authorization: Bearer <token>
+```
+**Parameters:**
+- `period`: week | month | year
+- `startDate`: تاريخ البداية (اختياري)
+- `endDate`: تاريخ النهاية (اختياري)
+
+**Response:**
+```json
+{
+  "success": true,
+  "period": "month",
+  "invoiceStats": {
+    "totalInvoices": 150,
+    "totalRevenue": 75000.00,
+    "averageInvoiceValue": 500.00
+  },
+  "inventoryStats": {
+    "totalProducts": 200,
+    "totalQuantity": 1500,
+    "totalValue": 300000.00,
+    "lowStockProducts": 15,
+    "outOfStockProducts": 3
+  },
+  "topProducts": [...],
+  "categoryStats": [...],
+  "dailySales": [...]
+}
+```
+
+### 2.4 إدارة الملف الشخصي
+
+#### جلب بيانات الملف الشخصي
+```http
+GET /api/admin/profile
+Authorization: Bearer <token>
+```
+
+#### تحديث الملف الشخصي
+```http
+PUT /api/admin/profile
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "firstName": "محمد",
+  "lastName": "أحمد",
+  "companyName": "متجر الأمانة المحدث",
+  "companyAddress": "العنوان الجديد",
+  "phone": "01234567890",
+  "currentPassword": "current123", // مطلوب فقط لتغيير كلمة المرور
+  "newPassword": "newpassword123"  // اختياري
+}
+```
+
+### 2.5 جلب بيانات أدمن بالـ ID
+```http
+GET /api/admin/admin/:id
+Authorization: Bearer <token>
+```
+
+### 2.6 تقارير مخصصة
 ```http
 GET /api/admin/reports?type=daily&startDate=2024-01-01&endDate=2024-12-31
 Authorization: Bearer <token>
 ```
 
-### 2.5 قائمة الفواتير مع فلترة
+### 2.7 قائمة الفواتير مع فلترة
 ```http
 GET /api/admin/invoices/list?page=1&limit=10&date=2024-01-01
 Authorization: Bearer <token>
@@ -497,6 +649,18 @@ Authorization: Bearer <superAdmin_token>
 
 ### 8.2 إدارة الأدمن
 
+#### جلب جميع الأدمن
+```http
+GET /api/superAdmin/users/admins
+Authorization: Bearer <superAdmin_token>
+```
+
+#### جلب أدمن بالـ ID
+```http
+GET /api/superAdmin/users/admin/:id
+Authorization: Bearer <superAdmin_token>
+```
+
 #### إنشاء أدمن جديد
 ```http
 POST /api/superAdmin/users/admin
@@ -506,6 +670,9 @@ Content-Type: application/json
 {
   "firstName": "محمد",
   "lastName": "أحمد",
+  "companyName": "متجر الأمانة",
+  "companyAddress": "شارع الجامعة، القاهرة، مصر",
+  "phone": "01234567890",
   "email": "admin@example.com",
   "password": "password123"
 }
@@ -515,6 +682,12 @@ Content-Type: application/json
 ```http
 PUT /api/superAdmin/users/admin/:id
 Authorization: Bearer <superAdmin_token>
+Content-Type: application/json
+
+{
+  "firstName": "محمد محدث",
+  "companyName": "متجر الأمانة المحدث"
+}
 ```
 
 #### حذف أدمن
@@ -527,13 +700,13 @@ Authorization: Bearer <superAdmin_token>
 
 #### جلب جميع الاشتراكات
 ```http
-GET /api/subscriptions/
+GET /api/superAdmin/subscriptions
 Authorization: Bearer <superAdmin_token>
 ```
 
 #### الموافقة على اشتراك أو رفضه
 ```http
-POST /api/subscriptions/:subscriptionId/approve
+POST /api/superAdmin/subscriptions/:subscriptionId/approve
 Authorization: Bearer <superAdmin_token>
 Content-Type: application/json
 
@@ -543,10 +716,91 @@ Content-Type: application/json
 }
 ```
 
-### 8.4 التقارير العامة
+### 8.4 إرسال الإشعارات
+
+#### إرسال إشعارات للمستخدمين
+```http
+POST /api/superAdmin/notifications/send
+Authorization: Bearer <superAdmin_token>
+Content-Type: application/json
+
+{
+  "recipients": {
+    "type": "all", // أو "specific" أو "verified" أو "unverified"
+    "userIds": ["userId1", "userId2"] // مطلوب فقط إذا كان type = "specific"
+  },
+  "subject": "موضوع الإشعار",
+  "message": "نص الرسالة",
+  "type": "email"
+}
+```
+
+**أنواع المستقبلين:**
+- `all`: جميع الأدمن
+- `specific`: أدمن محددين بالـ ID
+- `verified`: الأدمن المفعلين فقط
+- `unverified`: الأدمن غير المفعلين
+
+### 8.5 عرض المنتجات والفواتير
+
+#### عرض جميع المنتجات عبر جميع الأدمنز
+```http
+GET /api/superAdmin/products?adminId=123&categoryId=456&search=حليب&minPrice=10&maxPrice=100&page=1&limit=20
+Authorization: Bearer <superAdmin_token>
+```
+
+**المعايير المتاحة:**
+- `adminId`: فلترة حسب أدمن محدد
+- `categoryId`: فلترة حسب فئة محددة
+- `search`: البحث في اسم المنتج أو SKU أو الوصف
+- `minPrice`, `maxPrice`: نطاق السعر
+- `minQuantity`, `maxQuantity`: نطاق الكمية
+- `page`, `limit`: الصفحات
+- `sortBy`, `sortOrder`: الترتيب
+
+#### عرض جميع الفواتير عبر جميع الأدمنز
+```http
+GET /api/superAdmin/invoices?adminId=123&customerName=أحمد&minAmount=100&maxAmount=1000&startDate=2024-01-01&endDate=2024-12-31&page=1&limit=20
+Authorization: Bearer <superAdmin_token>
+```
+
+**المعايير المتاحة:**
+- `adminId`: فلترة حسب أدمن محدد
+- `customerName`: البحث في اسم العميل
+- `minAmount`, `maxAmount`: نطاق المبلغ
+- `startDate`, `endDate`: نطاق التاريخ
+- `page`, `limit`: الصفحات
+
+#### عرض المنتجات الخاصة بأدمن محدد
+```http
+GET /api/superAdmin/admins/:id/products?categoryId=456&search=حليب&minPrice=10&maxPrice=100&page=1&limit=20
+Authorization: Bearer <superAdmin_token>
+```
+
+#### عرض الفواتير الخاصة بأدمن محدد
+```http
+GET /api/superAdmin/admins/:id/invoices?customerName=أحمد&minAmount=100&maxAmount=1000&startDate=2024-01-01&endDate=2024-12-31&page=1&limit=20
+Authorization: Bearer <superAdmin_token>
+```
+
+### 8.6 التقارير العامة
 ```http
 GET /api/superAdmin/reports/global
 Authorization: Bearer <superAdmin_token>
+```
+
+**Response Example:**
+```json
+{
+  "totalAdmins": 50,
+  "totalRevenue": 250000.00,
+  "totalProducts": 5000,
+  "activeSubscriptions": 45,
+  "pendingSubscriptions": 5,
+  "monthlyGrowth": "15%",
+  "topPerformingAdmins": [...],
+  "revenueByMonth": [...]
+}
 ```
 
 ---

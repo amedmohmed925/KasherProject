@@ -19,6 +19,9 @@ const getAdminStatsController = require('../controllers/admin/getAdminStatsContr
 const analyticsController = require('../controllers/admin/dashboard/analyticsController');
 const searchProductsController = require('../controllers/admin/products/searchProductsController');
 const getAdminByIdController = require('../controllers/admin/getAdminByIdController');
+const getProfileController = require('../controllers/admin/getProfileController');
+const updateProfileController = require('../controllers/admin/updateProfileController');
+const getAdvancedAnalyticsController = require('../controllers/admin/getAdvancedAnalyticsController');
 
 // Multer configuration for file uploads
 const multer = require('multer');
@@ -121,6 +124,26 @@ router.get('/reports', ...adminMiddleware, generateReport);
 
 // Dashboard Analytics
 router.get('/dashboard/analytics', ...adminMiddleware, analyticsController);
+
+// Advanced Analytics with filters
+router.get('/analytics/advanced', ...adminMiddleware, getAdvancedAnalyticsController);
+
+// Profile Management
+router.get('/profile', ...adminMiddleware, getProfileController);
+router.put('/profile', 
+  ...adminMiddleware,
+  [
+    body('firstName').optional().notEmpty().withMessage('الاسم الأول لا يمكن أن يكون فارغ'),
+    body('lastName').optional().notEmpty().withMessage('الاسم الأخير لا يمكن أن يكون فارغ'),
+    body('companyName').optional().notEmpty().withMessage('اسم الشركة لا يمكن أن يكون فارغ'),
+    body('companyAddress').optional().notEmpty().withMessage('عنوان الشركة لا يمكن أن يكون فارغ'),
+    body('phone').optional().notEmpty().withMessage('رقم الهاتف لا يمكن أن يكون فارغ'),
+    body('newPassword').optional().isLength({ min: 6 }).withMessage('كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل'),
+    body('currentPassword').if(body('newPassword').exists()).notEmpty().withMessage('كلمة المرور الحالية مطلوبة لتغيير كلمة المرور')
+  ],
+  validate,
+  updateProfileController
+);
 
 // Get admin by ID
 router.get('/admin/:id', ...adminSuperAdminMiddleware, getAdminByIdController);
