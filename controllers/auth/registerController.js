@@ -6,11 +6,11 @@ const mailSender = require('../../utils/mailSender');
 module.exports = async (req, res) => {
   try {
     console.log('Received request body:', req.body);
-    const { firstName, lastName, phone, email, password, confirmPassword } = req.body;
+    const { firstName, lastName, phone, email, password, confirmPassword, companyName, companyAddress } = req.body;
 
-    if (!firstName || !lastName || !phone || !email || !password || !confirmPassword) {
+    if (!firstName || !lastName || !phone || !email || !password || !confirmPassword || !companyName || !companyAddress) {
       console.log('Validation failed: Missing fields');
-      return res.status(400).json({ message: "All fields are required" });
+      return res.status(400).json({ message: "جميع الحقول مطلوبة (الاسم الأول، الاسم الأخير، الهاتف، البريد الإلكتروني، كلمة المرور، تأكيد كلمة المرور، اسم الشركة، عنوان الشركة)" });
     }
 
     if (password !== confirmPassword) {
@@ -34,6 +34,8 @@ module.exports = async (req, res) => {
       password: hash,
       role: 'admin',
       phone,
+      companyName,
+      companyAddress,
       isVerified: false,
       otp
     });

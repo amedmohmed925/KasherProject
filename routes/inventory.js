@@ -7,10 +7,27 @@ const searchProductsController = require('../controllers/admin/products/searchPr
 const getProductsController = require('../controllers/admin/products/getProductsController');
 const addProductController = require('../controllers/admin/products/addProductController');
 const updateProductController = require('../controllers/admin/products/updateProductController');
+const updateProductImageController = require('../controllers/admin/products/updateProductImageController');
 const deleteProductController = require('../controllers/admin/products/deleteProductController');
 const inventoryStatsController = require('../controllers/admin/inventory/inventoryStatsController');
 const inventoryReportController = require('../controllers/admin/inventory/inventoryReportController');
 const lowStockController = require('../controllers/admin/inventory/lowStockController');
+
+// Multer configuration for file uploads
+const multer = require('multer');
+const upload = multer({ 
+  dest: 'uploads/',
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('يجب أن يكون الملف صورة فقط'), false);
+    }
+  }
+});
 
 const router = express.Router();
 
@@ -23,16 +40,18 @@ router.get('/products',
   getProductsController
 );
 
-// Add new product
+// Add new product with image upload
 router.post('/products',
   ...adminMiddleware,
+  upload.single('image'),
   [
-    body('name').notEmpty().withMessage('Product name is required'),
-    body('sku').notEmpty().withMessage('SKU is required'),
-    body('originalPrice').isFloat({ min: 0 }).withMessage('Original price must be a positive number'),
-    body('sellingPrice').isFloat({ min: 0 }).withMessage('Selling price must be a positive number'),
-    body('quantity').isInt({ min: 0 }).withMessage('Quantity must be a non-negative integer'),
-    body('category').optional().isString()
+    body('name').notEmpty().withMessage('اسم المنتج مطلوب'),
+    body('sku').notEmpty().withMessage('رمز المنتج مطلوب'),
+    body('originalPrice').isFloat({ min: 0 }).withMessage('السعر الأصلي يجب أن يكون رقم موجب'),
+    body('sellingPrice').isFloat({ min: 0 }).withMessage('سعر البيع يجب أن يكون رقم موجب'),
+    body('quantity').isInt({ min: 0 }).withMessage('الكمية يجب أن تكون رقم غير سالب'),
+    body('categoryId').isMongoId().withMessage('معرف الفئة مطلوب'),
+    body('description').optional().isString()
   ],
   validate,
   addProductController
@@ -42,15 +61,23 @@ router.post('/products',
 router.put('/products/:id',
   ...adminMiddleware,
   [
-    body('name').optional().notEmpty().withMessage('Product name cannot be empty'),
-    body('sku').optional().notEmpty().withMessage('SKU cannot be empty'),
-    body('originalPrice').optional().isFloat({ min: 0 }).withMessage('Original price must be a positive number'),
-    body('sellingPrice').optional().isFloat({ min: 0 }).withMessage('Selling price must be a positive number'),
-    body('quantity').optional().isInt({ min: 0 }).withMessage('Quantity must be a non-negative integer'),
-    body('category').optional().isString()
+    body('name').optional().notEmpty().withMessage('اسم المنتج لا يمكن أن يكون فارغ'),
+    body('sku').optional().notEmpty().withMessage('رمز المنتج لا يمكن أن يكون فارغ'),
+    body('originalPrice').optional().isFloat({ min: 0 }).withMessage('السعر الأصلي يجب أن يكون رقم موجب'),
+    body('sellingPrice').optional().isFloat({ min: 0 }).withMessage('سعر البيع يجب أن يكون رقم موجب'),
+    body('quantity').optional().isInt({ min: 0 }).withMessage('الكمية يجب أن تكون رقم غير سالب'),
+    body('categoryId').optional().isMongoId().withMessage('معرف الفئة غير صحيح'),
+    body('description').optional().isString()
   ],
   validate,
   updateProductController
+);
+
+// Update product image only
+router.put('/products/:id/image',
+  ...adminMiddleware,
+  upload.single('image'),
+  updateProductImageController
 );
 
 // Delete product
@@ -63,11 +90,10 @@ router.delete('/products/:id',
 router.get('/products/search',
   ...adminMiddleware,
   [
-    query('name').optional().isString(),
+    query('q').optional().isString().withMessage('استعلام البحث يجب أن يكون نص'),
     query('category').optional().isString(),
-    query('profit').optional().isNumeric(),
-    query('quantity').optional().isNumeric(),
-    query('price').optional().isNumeric()
+    query('minPrice').optional().isFloat({ min: 0 }).withMessage('الحد الأدنى للسعر يجب أن يكون رقم موجب'),
+    query('maxPrice').optional().isFloat({ min: 0 }).withMessage('الحد الأقصى للسعر يجب أن يكون رقم موجب')
   ],
   validate,
   searchProductsController
@@ -83,8 +109,8 @@ router.get('/stats',
 router.get('/report',
   ...adminMiddleware,
   [
-    query('startDate').optional().isISO8601().withMessage('Start date must be a valid date'),
-    query('endDate').optional().isISO8601().withMessage('End date must be a valid date'),
+    query('startDate').optional().isISO8601().withMessage('تاريخ البداية يجب أن يكون تاريخ صحيح'),
+    query('endDate').optional().isISO8601().withMessage('تاريخ النهاية يجب أن يكون تاريخ صحيح'),
     query('category').optional().isString()
   ],
   validate,
@@ -95,7 +121,7 @@ router.get('/report',
 router.get('/low-stock',
   ...adminMiddleware,
   [
-    query('threshold').optional().isInt({ min: 1 }).withMessage('Threshold must be a positive integer')
+    query('threshold').optional().isInt({ min: 1 }).withMessage('العتبة يجب أن تكون رقم موجب')
   ],
   validate,
   lowStockController

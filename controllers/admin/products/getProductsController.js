@@ -5,7 +5,7 @@ module.exports = async (req, res) => {
     console.log('Authenticated user:', req.user);
     console.log('Fetching products for adminId:', req.user._id);
 
-    const products = await Product.find({ adminId: req.user._id });
+    const products = await Product.find({ adminId: req.user._id }).populate('categoryId', 'name');
     res.json(products);
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });

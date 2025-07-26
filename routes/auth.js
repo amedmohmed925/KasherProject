@@ -14,13 +14,14 @@ const refreshTokenController = require('../controllers/auth/refreshTokenControll
 const router = express.Router();
 
 router.post('/register',
-  body('firstName').notEmpty(),
-  body('lastName').notEmpty(),
-  body('businessName').notEmpty(),
-  body('phone').notEmpty(),
-  body('email').isEmail(),
-  body('password').isLength({ min: 6 }),
-  body('confirmPassword').notEmpty(),
+  body('firstName').notEmpty().withMessage('الاسم الأول مطلوب'),
+  body('lastName').notEmpty().withMessage('الاسم الأخير مطلوب'),
+  body('companyName').notEmpty().withMessage('اسم الشركة مطلوب'),
+  body('companyAddress').notEmpty().withMessage('عنوان الشركة مطلوب'),
+  body('phone').notEmpty().withMessage('رقم الهاتف مطلوب'),
+  body('email').isEmail().withMessage('البريد الإلكتروني غير صحيح'),
+  body('password').isLength({ min: 6 }).withMessage('كلمة المرور يجب أن تكون 6 أحرف على الأقل'),
+  body('confirmPassword').notEmpty().withMessage('تأكيد كلمة المرور مطلوب'),
   validate,
   registerController
 );

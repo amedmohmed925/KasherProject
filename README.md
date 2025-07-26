@@ -24,6 +24,8 @@
 - 💳 نظام اشتراكات مع خطط متعددة (Trial/Monthly/Yearly)
 - 📧 نظام إشعارات بالبريد الإلكتروني
 - 🔄 حماية من Rate Limiting
+- 🖼️ رفع وإدارة صور المنتجات مع Cloudinary
+- 🗂️ ربط المنتجات بالفئات عبر ObjectId References
 
 ---
 
@@ -35,7 +37,8 @@
 - **Authentication**: JWT + Refresh Tokens
 - **Security**: Helmet, XSS-Clean, Rate Limiting
 - **Email**: NodeMailer
-- **File Upload**: Multer + Cloudinary
+- **File Upload**: Multer + Cloudinary (رفع الصور مع تحسين تلقائي)
+- **Image Storage**: Cloudinary (تخزين سحابي مع تحسين وضغط الصور)
 - **Validation**: Express-Validator
 
 ---
@@ -67,6 +70,14 @@ Development: http://localhost:3000/api
 
 ## 🔑 1. Authentication Endpoints
 
+### 📋 **متطلبات التسجيل:**
+- ✅ الاسم الأول والأخير
+- ✅ اسم الشركة وعنوانها (جديد!)
+- ✅ رقم الهاتف
+- ✅ البريد الإلكتروني
+- ✅ كلمة المرور (6 أحرف على الأقل)
+- ✅ تأكيد كلمة المرور
+
 ### 1.1 التسجيل
 ```http
 POST /api/auth/register
@@ -74,11 +85,20 @@ Content-Type: application/json
 
 {
   "firstName": "محمد",
-  "lastName": "أحمد", 
+  "lastName": "أحمد",
+  "companyName": "متجر الأمانة",
+  "companyAddress": "شارع الجامعة، القاهرة، مصر",
   "phone": "01234567890",
-  "email": "admin@example.com",
+  "email": "admin@example.com", 
   "password": "password123",
   "confirmPassword": "password123"
+}
+```
+
+**Response:**
+```json
+{
+  "message": "تم التسجيل بنجاح. يرجى التحقق من بريدك الإلكتروني."
 }
 ```
 
@@ -198,23 +218,27 @@ GET /api/admin/products
 Authorization: Bearer <token>
 ```
 
-### 3.2 إضافة منتج جديد
+### 3.2 إضافة منتج جديد مع رفع الصور
 ```http
 POST /api/admin/products
 Authorization: Bearer <token>
-Content-Type: application/json
+Content-Type: multipart/form-data
 
-{
-  "name": "حليب نادك",
-  "sku": "NADEC001",
-  "originalPrice": 5.50,
-  "sellingPrice": 7.00,
-  "quantity": 100,
-  "category": "منتجات ألبان",
-  "description": "حليب طازج كامل الدسم",
-  "image": "https://example.com/image.jpg"
-}
+Form Data:
+name: حليب نادك
+sku: NADEC001
+originalPrice: 5.50
+sellingPrice: 7.00
+quantity: 100
+categoryId: 507f1f77bcf86cd799439011
+description: حليب طازج كامل الدسم
+image: [file] (اختياري - صورة المنتج، حد أقصى 5MB)
 ```
+
+**ملاحظات مهمة:** 
+- يجب إضافة الفئات أولاً قبل إضافة المنتجات، واستخدام `categoryId` من الفئات المضافة
+- رفع الصور اختياري ويتم حفظها على Cloudinary مع تحسين تلقائي
+- الصور المقبولة: jpg, png, gif, webp (حد أقصى 5MB)
 
 ### 3.3 تحديث منتج
 ```http
@@ -225,25 +249,49 @@ Content-Type: application/json
 {
   "name": "حليب نادك محدث",
   "quantity": 150,
-  "sellingPrice": 7.50
+  "sellingPrice": 7.50,
+  "categoryId": "507f1f77bcf86cd799439011"
 }
 ```
+**ملاحظة:** جميع الحقول اختيارية - يتم تحديث الحقول المرسلة فقط
 
-### 3.4 حذف منتج
+### 3.4 تحديث صورة المنتج فقط
+```http
+PUT /api/admin/products/:id/image
+Authorization: Bearer <token>
+Content-Type: multipart/form-data
+
+Form Data:
+image: [file] (مطلوب - صورة المنتج الجديدة، حد أقصى 5MB)
+```
+**ملاحظة:** يتم حذف الصورة القديمة تلقائياً من Cloudinary
+
+### 3.5 حذف منتج
 ```http
 DELETE /api/admin/products/:id
 Authorization: Bearer <token>
 ```
 
-### 3.5 البحث في المنتجات
+### 3.6 البحث في المنتجات
 ```http
-GET /api/admin/products/search?name=حليب&category=ألبان&minPrice=5&maxPrice=10
+GET /api/admin/products/search?q=حليب&category=ألبان&minPrice=5&maxPrice=10
 Authorization: Bearer <token>
 ```
+
+**معايير البحث:**
+- `q`: البحث في اسم المنتج أو الوصف
+- `category`: البحث حسب الفئة
+- `minPrice`: الحد الأدنى للسعر
+- `maxPrice`: الحد الأقصى للسعر
 
 ---
 
 ## 📂 4. Categories Management
+
+### 🔄 **Workflow إضافة منتج مع الصور:**
+1. **أولاً:** إضافة فئة (Categories)
+2. **ثانياً:** إضافة منتج مع ربطه بالفئة (categoryId) ورفع الصورة
+3. **اختياري:** تحديث صورة المنتج لاحقاً
 
 ### 4.1 جلب جميع الفئات
 ```http
@@ -261,6 +309,21 @@ Content-Type: application/json
   "name": "منتجات ألبان"
 }
 ```
+
+**Response:**
+```json
+{
+  "message": "Category created",
+  "category": {
+    "_id": "507f1f77bcf86cd799439011",
+    "name": "منتجات ألبان",
+    "adminId": "507f1f77bcf86cd799439010",
+    "createdAt": "2024-01-01T12:00:00.000Z"
+  }
+}
+```
+
+**💡 نصيحة:** احفظ الـ `_id` لاستخدامه كـ `categoryId` عند إضافة المنتجات!
 
 ### 4.3 تحديث فئة
 ```http
@@ -368,20 +431,27 @@ Authorization: Bearer <token>
 GET /api/inventory/products
 Authorization: Bearer <token>
 
-# إضافة منتج
+# إضافة منتج مع رفع الصورة
 POST /api/inventory/products
 Authorization: Bearer <token>
+Content-Type: multipart/form-data
 
 # تحديث منتج  
 PUT /api/inventory/products/:id
 Authorization: Bearer <token>
+Content-Type: application/json
+
+# تحديث صورة المنتج فقط
+PUT /api/inventory/products/:id/image
+Authorization: Bearer <token>
+Content-Type: multipart/form-data
 
 # حذف منتج
 DELETE /api/inventory/products/:id
 Authorization: Bearer <token>
 
 # البحث في المنتجات
-GET /api/inventory/products/search
+GET /api/inventory/products/search?q=نص البحث&category=الفئة&minPrice=5&maxPrice=100
 Authorization: Bearer <token>
 ```
 
@@ -486,34 +556,34 @@ Authorization: Bearer <superAdmin_token>
 ### User Schema
 ```javascript
 {
-  firstName: String,       // الاسم الأول
-  lastName: String,        // الاسم الأخير  
-  email: String,           // البريد الإلكتروني (unique)
-  password: String,        // كلمة المرور المشفرة
-  role: String,            // admin | superAdmin
-  phone: String,           // رقم الهاتف
-  isVerified: Boolean,     // حالة التفعيل
+  firstName: String,       // الاسم الأول (مطلوب)
+  lastName: String,        // الاسم الأخير (مطلوب)
+  companyName: String,     // اسم الشركة (مطلوب)
+  companyAddress: String,  // عنوان الشركة (مطلوب)
+  email: String,           // البريد الإلكتروني (unique, مطلوب)
+  password: String,        // كلمة المرور المشفرة (مطلوب)
+  role: String,            // admin | superAdmin (مطلوب)
+  phone: String,           // رقم الهاتف (مطلوب)
+  isVerified: Boolean,     // حالة التفعيل (افتراضي: false)
   otp: String,            // رمز التحقق
-  companyName: String,     // اسم الشركة
-  companyAddress: String,  // عنوان الشركة
-  createdAt: Date
+  createdAt: Date         // تاريخ الإنشاء
 }
 ```
 
 ### Product Schema
 ```javascript
 {
-  adminId: ObjectId,       // معرف الأدمن (ref: User)
-  name: String,            // اسم المنتج
-  sku: String,             // رمز المنتج (unique per admin)
-  originalPrice: Number,   // السعر الأصلي
-  sellingPrice: Number,    // سعر البيع
-  quantity: Number,        // الكمية
-  category: String,        // الفئة
+  adminId: ObjectId,       // معرف الأدمن (ref: User, مطلوب)
+  name: String,            // اسم المنتج (مطلوب)
+  sku: String,             // رمز المنتج (unique per admin, مطلوب)
+  originalPrice: Number,   // السعر الأصلي (مطلوب)
+  sellingPrice: Number,    // سعر البيع (مطلوب)
+  quantity: Number,        // الكمية (مطلوب)
+  categoryId: ObjectId,    // معرف الفئة (ref: Category, مطلوب)
   description: String,     // الوصف
   image: String,           // رابط الصورة
-  createdAt: Date,
-  updatedAt: Date
+  createdAt: Date,         // تاريخ الإنشاء
+  updatedAt: Date          // تاريخ التحديث
 }
 ```
 

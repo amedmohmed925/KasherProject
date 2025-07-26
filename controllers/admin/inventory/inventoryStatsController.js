@@ -42,18 +42,28 @@ module.exports = async (req, res) => {
 
     // أكثر المنتجات ربحية (أعلى 5)
     const topProfitableProducts = await Product.find({ adminId })
+      .populate('categoryId', 'name')
       .sort({ 
         profit: -1  // ترتيب حسب الربح تنازليا
       })
       .limit(5)
-      .select('name sku sellingPrice originalPrice quantity');
+      .select('name sku sellingPrice originalPrice quantity categoryId');
 
     // المنتجات حسب الفئات
     const productsByCategory = await Product.aggregate([
       { $match: { adminId } },
+      { $lookup: {
+          from: 'categories',
+          localField: 'categoryId',
+          foreignField: '_id',
+          as: 'category'
+        }
+      },
+      { $unwind: { path: '$category', preserveNullAndEmptyArrays: true } },
       {
         $group: {
-          _id: '$category',
+          _id: '$category.name',
+          categoryId: { $first: '$category._id' },
           count: { $sum: 1 },
           totalQuantity: { $sum: '$quantity' },
           totalValue: { $sum: { $multiply: ['$quantity', '$sellingPrice'] } }
