@@ -1,0 +1,192 @@
+paths:
+  /subscriptions/subscriptions/upload:
+    post:
+      summary: رفع إيصال اشتراك (Admin)
+      tags: [Subscriptions]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - plan
+                - paidAmountText
+                - duration
+                - price
+                - startDate
+                - endDate
+                - receipt
+              properties:
+                plan:
+                  type: string
+                  enum: [monthly, yearly, custom]
+                  example: "monthly"
+                  description: نوع الاشتراك
+                paidAmountText:
+                  type: string
+                  example: "49 جنيه مصري"
+                  description: نص المبلغ المدفوع
+                duration:
+                  type: string
+                  enum: [month, year, custom]
+                  example: "month"
+                  description: مدة الاشتراك
+                price:
+                  type: number
+                  example: 49
+                  description: سعر الاشتراك
+                startDate:
+                  type: string
+                  format: date
+                  example: "2024-01-01"
+                  description: تاريخ بداية الاشتراك
+                endDate:
+                  type: string
+                  format: date
+                  example: "2024-02-01"
+                  description: تاريخ انتهاء الاشتراك
+                receipt:
+                  type: string
+                  format: binary
+                  description: صورة إيصال الدفع
+      responses:
+        201:
+          description: تم رفع إيصال الاشتراك بنجاح
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Subscription receipt uploaded successfully"
+                  subscription:
+                    $ref: '#/components/schemas/Subscription'
+        400:
+          description: بيانات غير صحيحة أو ملف غير مقبول
+
+  /subscriptions/:
+    get:
+      summary: جلب جميع الاشتراكات (SuperAdmin)
+      tags: [Subscriptions]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: قائمة جميع الاشتراكات
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Subscription'
+        403:
+          description: صلاحيات غير كافية (سوبر أدمن فقط)
+
+  /subscriptions/{subscriptionId}/approve:
+    post:
+      summary: الموافقة أو رفض اشتراك (SuperAdmin)
+      tags: [Subscriptions]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: subscriptionId
+          required: true
+          schema:
+            type: string
+          description: معرف الاشتراك
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [approved, rejected]
+                  example: "approved"
+                  description: حالة الاشتراك الجديدة
+                rejectionReason:
+                  type: string
+                  example: "إيصال غير واضح أو غير صحيح"
+                  description: سبب الرفض (مطلوب عند الرفض)
+      responses:
+        200:
+          description: تم تحديث حالة الاشتراك بنجاح
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Subscription approved successfully"
+                  subscription:
+                    $ref: '#/components/schemas/Subscription'
+        400:
+          description: بيانات غير صحيحة
+        403:
+          description: صلاحيات غير كافية (سوبر أدمن فقط)
+        404:
+          description: الاشتراك غير موجود
+
+components:
+  schemas:
+    SubscriptionPlan:
+      type: object
+      properties:
+        name:
+          type: string
+          enum: [trial, monthly, yearly, custom]
+          example: "monthly"
+        price:
+          type: number
+          example: 49
+        duration:
+          type: string
+          enum: [trial, month, year, custom]
+          example: "month"
+        features:
+          type: array
+          items:
+            type: string
+          example: ["إدارة المنتجات", "إدارة الفواتير", "التقارير الأساسية"]
+        description:
+          type: string
+          example: "اشتراك شهري يتضمن جميع الميزات الأساسية"
+
+    SubscriptionStats:
+      type: object
+      properties:
+        totalSubscriptions:
+          type: integer
+          example: 150
+        activeSubscriptions:
+          type: integer
+          example: 120
+        pendingSubscriptions:
+          type: integer
+          example: 15
+        expiredSubscriptions:
+          type: integer
+          example: 15
+        monthlyRevenue:
+          type: number
+          example: 5880.00
+        yearlyRevenue:
+          type: number
+          example: 70560.00
+        conversionRate:
+          type: string
+          example: "80%"
+
+tags:
+  - name: Subscriptions
+    description: إدارة الاشتراكات والمدفوعات

@@ -1,0 +1,520 @@
+paths:
+  /admin/products/{id}:
+    put:
+      summary: تحديث منتج
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: معرف المنتج
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "جبنة بيضاء محدثة"
+                sku:
+                  type: string
+                  example: "SKU123-NEW"
+                originalPrice:
+                  type: number
+                  example: 45
+                sellingPrice:
+                  type: number
+                  example: 55
+                quantity:
+                  type: integer
+                  minimum: 0
+                  example: 120
+                categoryId:
+                  type: string
+                  example: "507f1f77bcf86cd799439011"
+                description:
+                  type: string
+                  example: "جبنة بيضاء طازجة محدثة"
+                image:
+                  type: string
+                  format: uri
+                  example: "https://cloudinary.com/image.jpg"
+      responses:
+        200:
+          description: تم تحديث المنتج بنجاح
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Product updated successfully"
+                  product:
+                    $ref: '#/components/schemas/Product'
+        400:
+          description: بيانات غير صحيحة
+        404:
+          description: المنتج غير موجود
+    delete:
+      summary: حذف منتج
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: معرف المنتج
+      responses:
+        200:
+          description: تم حذف المنتج بنجاح
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Product deleted"
+        400:
+          description: لا يمكن حذف المنتج (مستخدم في فواتير)
+        404:
+          description: المنتج غير موجود
+
+  /admin/products/{id}/image:
+    put:
+      summary: تحديث صورة المنتج
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: معرف المنتج
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - image
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: صورة المنتج الجديدة (حد أقصى 5MB)
+      responses:
+        200:
+          description: تم تحديث صورة المنتج بنجاح
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Product image updated successfully"
+                  imageUrl:
+                    type: string
+                    example: "https://cloudinary.com/new-image.jpg"
+        400:
+          description: ملف غير صالح
+        404:
+          description: المنتج غير موجود
+
+  /admin/products/search:
+    get:
+      summary: البحث في المنتجات
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+          description: نص البحث في اسم المنتج أو SKU
+          example: "جبنة"
+        - in: query
+          name: category
+          schema:
+            type: string
+          description: اسم الفئة للتصفية
+          example: "منتجات الألبان"
+        - in: query
+          name: minPrice
+          schema:
+            type: number
+            minimum: 0
+          description: الحد الأدنى للسعر
+          example: 20
+        - in: query
+          name: maxPrice
+          schema:
+            type: number
+            minimum: 0
+          description: الحد الأقصى للسعر
+          example: 100
+      responses:
+        200:
+          description: نتائج البحث
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  products:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+
+  /admin/categories/{id}:
+    put:
+      summary: تحديث فئة
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: معرف الفئة
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  example: "منتجات الألبان المحدثة"
+      responses:
+        200:
+          description: تم تحديث الفئة بنجاح
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Category updated successfully"
+                  category:
+                    $ref: '#/components/schemas/Category'
+        400:
+          description: بيانات غير صحيحة
+        404:
+          description: الفئة غير موجودة
+    delete:
+      summary: حذف فئة
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: معرف الفئة
+      responses:
+        200:
+          description: تم حذف الفئة بنجاح
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Category deleted"
+        400:
+          description: لا يمكن حذف الفئة (تحتوي على منتجات)
+        404:
+          description: الفئة غير موجودة
+
+  /admin/all-invoices:
+    get:
+      summary: جلب جميع الفواتير مع التفاصيل الكاملة
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: قائمة جميع الفواتير
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Invoice'
+
+  /admin/invoices:
+    get:
+      summary: قائمة الفواتير مع فلترة وترقيم الصفحات
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: رقم الصفحة
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+          description: عدد العناصر في الصفحة
+        - in: query
+          name: date
+          schema:
+            type: string
+            format: date
+          description: تصفية حسب التاريخ (YYYY-MM-DD)
+          example: "2024-01-15"
+      responses:
+        200:
+          description: قائمة الفواتير مع الترقيم
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Invoice'
+
+  /admin/reports:
+    get:
+      summary: تقرير مبيعات شامل
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: تقرير المبيعات والأرباح
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  report:
+                    type: object
+                    properties:
+                      totalSales:
+                        type: number
+                        example: 50000.00
+                      totalProfit:
+                        type: number
+                        example: 15000.00
+                      salesCount:
+                        type: integer
+                        example: 125
+                      period:
+                        type: string
+                        example: "January 2024"
+
+  /admin/dashboard/analytics:
+    get:
+      summary: تحليلات لوحة التحكم
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: تحليلات شاملة للوحة التحكم
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dailyStats:
+                    type: object
+                  weeklyStats:
+                    type: object
+                  monthlyStats:
+                    type: object
+                  topProducts:
+                    type: array
+                    items:
+                      type: object
+                  recentTransactions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Invoice'
+
+  /admin/analytics/advanced:
+    get:
+      summary: تحليلات متقدمة مع فلاتر
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: startDate
+          schema:
+            type: string
+            format: date
+          description: تاريخ البداية
+          example: "2024-01-01"
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: date
+          description: تاريخ النهاية
+          example: "2024-12-31"
+        - in: query
+          name: period
+          schema:
+            type: string
+            enum: [day, week, month, year]
+            default: month
+          description: فترة التجميع
+      responses:
+        200:
+          description: تحليلات متقدمة مفصلة
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  salesTrend:
+                    type: array
+                    items:
+                      type: object
+                  profitAnalysis:
+                    type: object
+                  productPerformance:
+                    type: array
+                    items:
+                      type: object
+                  customerInsights:
+                    type: object
+
+  /admin/profile:
+    get:
+      summary: جلب بيانات الملف الشخصي
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: بيانات الملف الشخصي
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  admin:
+                    allOf:
+                      - $ref: '#/components/schemas/User'
+                      - type: object
+                        properties:
+                          id:
+                            type: string
+                            example: "507f1f77bcf86cd799439011"
+    put:
+      summary: تحديث الملف الشخصي
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                  example: "أحمد"
+                lastName:
+                  type: string
+                  example: "محمد"
+                companyName:
+                  type: string
+                  example: "شركة الكاشير المحدثة"
+                companyAddress:
+                  type: string
+                  example: "الإسكندرية، مصر"
+                phone:
+                  type: string
+                  example: "+201234567890"
+                currentPassword:
+                  type: string
+                  description: كلمة المرور الحالية (مطلوبة عند تغيير كلمة المرور)
+                  example: "currentpassword123"
+                newPassword:
+                  type: string
+                  minLength: 6
+                  description: كلمة المرور الجديدة
+                  example: "newpassword123"
+      responses:
+        200:
+          description: تم تحديث الملف الشخصي بنجاح
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Profile updated successfully"
+                  admin:
+                    $ref: '#/components/schemas/User'
+        400:
+          description: بيانات غير صحيحة أو كلمة مرور خاطئة
+
+  /admin/admin/{id}:
+    get:
+      summary: جلب أدمن بالمعرف (للسوبر أدمن أيضاً)
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: معرف الأدمن
+      responses:
+        200:
+          description: بيانات الأدمن
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        404:
+          description: الأدمن غير موجود
+        403:
+          description: غير مصرح له

@@ -41,13 +41,78 @@ const upload = multer({
 
 const router = express.Router();
 
+/**
+ * @swagger
+ * tags:
+ *   name: Admin
+ *   description: إدارة البيانات الخاصة بالأدمن
+ */
+
 // Middleware مشترك لجميع routes الأدمن (authentication + subscription check)
 const adminMiddleware = [authenticate, authorize('admin'), checkSubscription];
 const adminSuperAdminMiddleware = [authenticate, authorize('admin', 'superAdmin')];
 
+/**
+ * @swagger
+ * /admin/categories:
+ *   get:
+ *     summary: جلب جميع الفئات
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: قائمة الفئات
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Category'
+ *       401:
+ *         description: غير مصرح له
+ *       403:
+ *         description: اشتراك غير نشط
+ */
 // Get all categories
 router.get('/categories', ...adminMiddleware, getCategoriesController);
 
+/**
+ * @swagger
+ * /admin/categories:
+ *   post:
+ *     summary: إضافة فئة جديدة
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: "منتجات الألبان"
+ *     responses:
+ *       201:
+ *         description: تم إنشاء الفئة بنجاح
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Category created"
+ *                 category:
+ *                   $ref: '#/components/schemas/Category'
+ *       400:
+ *         description: بيانات غير صحيحة
+ */
 // Add category
 router.post('/categories',
   ...adminSuperAdminMiddleware,
@@ -56,6 +121,35 @@ router.post('/categories',
   addCategoryController
 );
 
+/**
+ * @swagger
+ * /admin/stats:
+ *   get:
+ *     summary: إحصائيات الأدمن
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: إحصائيات مفصلة للأدمن
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 totalInvoices:
+ *                   type: integer
+ *                   example: 150
+ *                 dailyProfit:
+ *                   type: number
+ *                   example: 1250.50
+ *                 monthlyProfit:
+ *                   type: number
+ *                   example: 35000.75
+ *                 yearlyProfit:
+ *                   type: number
+ *                   example: 420000.00
+ */
 // Admin stats: invoices count, daily/monthly/yearly profits
 router.get('/stats', ...adminMiddleware, getAdminStatsController);
 
@@ -73,6 +167,84 @@ router.put('/categories/:id',
 // Delete category
 router.delete('/categories/:id', ...adminMiddleware, deleteCategoryController);
 
+/**
+ * @swagger
+ * /admin/products:
+ *   get:
+ *     summary: جلب جميع المنتجات
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: قائمة المنتجات
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Product'
+ *   post:
+ *     summary: إضافة منتج جديد مع صورة
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - sku
+ *               - originalPrice
+ *               - sellingPrice
+ *               - quantity
+ *               - categoryId
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: "جبنة بيضاء"
+ *               sku:
+ *                 type: string
+ *                 example: "SKU123"
+ *               originalPrice:
+ *                 type: number
+ *                 example: 40
+ *               sellingPrice:
+ *                 type: number
+ *                 example: 50
+ *               quantity:
+ *                 type: integer
+ *                 minimum: 0
+ *                 example: 100
+ *               categoryId:
+ *                 type: string
+ *                 example: "507f1f77bcf86cd799439011"
+ *               description:
+ *                 type: string
+ *                 example: "جبنة بيضاء طازجة"
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *                 description: صورة المنتج (اختياري، حد أقصى 5MB)
+ *     responses:
+ *       201:
+ *         description: تم إنشاء المنتج بنجاح
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Product created successfully"
+ *                 product:
+ *                   $ref: '#/components/schemas/Product'
+ *       400:
+ *         description: بيانات غير صحيحة
+ */
 // Get all products
 router.get('/products', ...adminMiddleware, getProducts);
 

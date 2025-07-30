@@ -16,6 +16,9 @@ const invoicesRoutes = require('./routes/invoices');
 const subscriptionsRoutes = require('./routes/subscriptions');
 const inventoryRoutes = require('./routes/inventory');
 
+// Swagger Configuration
+const { swaggerUi, specs } = require('./swagger');
+
 const app = express();
 
 // Middleware
@@ -78,6 +81,14 @@ app.use('/api/admin/invoices', invoicesRoutes);
 app.use('/api/subscriptions', subscriptionsRoutes);
 app.use('/api/inventory', inventoryRoutes);
 
+// Swagger API Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, {
+  explorer: true,
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'Kasher Project API Documentation',
+  customfavIcon: '/favicon.ico'
+}));
+
 
 // Health Check Endpoint
 app.get('/api/health', (req, res) => {
@@ -97,6 +108,7 @@ app.get('/', (req, res) => {
   res.json({
     message: 'مرحباً بك في نظام إدارة المتاجر - Kasher Project',
     status: 'API is running successfully',
+    documentation: '/api-docs',
     endpoints: {
       health: '/api/health',
       auth: '/api/auth',

@@ -1,0 +1,196 @@
+paths:
+  /admin/invoices/add-invoices:
+    post:
+      summary: إضافة فاتورة جديدة
+      tags: [Invoices]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoiceRequest'
+      responses:
+        201:
+          description: تم إنشاء الفاتورة بنجاح
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invoice created successfully"
+                  invoice:
+                    $ref: '#/components/schemas/Invoice'
+        400:
+          description: بيانات غير صحيحة أو منتج غير متاح
+
+  /admin/invoices/search:
+    get:
+      summary: البحث وفلترة الفواتير
+      tags: [Invoices]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: customerName
+          schema:
+            type: string
+          description: اسم العميل للبحث
+          example: "أحمد محمد"
+        - in: query
+          name: price
+          schema:
+            type: number
+          description: تصفية حسب السعر الإجمالي
+          example: 100
+        - in: query
+          name: date
+          schema:
+            type: string
+            format: date
+          description: تصفية حسب التاريخ
+          example: "2024-01-15"
+      responses:
+        200:
+          description: نتائج البحث في الفواتير
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  invoices:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Invoice'
+
+  /admin/invoices/:
+    get:
+      summary: جلب جميع الفواتير
+      tags: [Invoices]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: قائمة جميع الفواتير
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Invoice'
+
+  /admin/invoices/profit/{id}:
+    get:
+      summary: حساب ربح فاتورة محددة
+      tags: [Invoices]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: معرف الفاتورة
+      responses:
+        200:
+          description: تفاصيل ربح الفاتورة
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  invoiceId:
+                    type: string
+                    example: "507f1f77bcf86cd799439011"
+                  customer:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        example: "أحمد محمد"
+                  purchasedProducts:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: "جبنة بيضاء"
+                        quantity:
+                          type: integer
+                          example: 2
+                        price:
+                          type: number
+                          example: 50
+                        total:
+                          type: number
+                          example: 100
+                  totalOriginal:
+                    type: number
+                    example: 80
+                    description: التكلفة الأصلية
+                  totalSelling:
+                    type: number
+                    example: 100
+                    description: سعر البيع
+                  profit:
+                    type: number
+                    example: 20
+                    description: صافي الربح
+        404:
+          description: الفاتورة غير موجودة
+
+  /admin/invoices/profits:
+    get:
+      summary: جلب جميع الأرباح
+      tags: [Invoices]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: تفاصيل جميع الأرباح
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        invoiceId:
+                          type: string
+                        customer:
+                          type: object
+                        purchasedProducts:
+                          type: array
+                        totalOriginal:
+                          type: number
+                        totalSelling:
+                          type: number
+                        profit:
+                          type: number
+                  summary:
+                    type: object
+                    properties:
+                      totalOriginalCost:
+                        type: number
+                        example: 5000
+                      totalSellingPrice:
+                        type: number
+                        example: 6500
+                      totalProfit:
+                        type: number
+                        example: 1500
+                      profitMargin:
+                        type: string
+                        example: "30%"
+
+tags:
+  - name: Invoices
+    description: إدارة الفواتير والمبيعات

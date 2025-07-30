@@ -1,0 +1,359 @@
+paths:
+  /inventory/products:
+    get:
+      summary: جلب جميع منتجات المخزون
+      tags: [Inventory]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: قائمة منتجات المخزون
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+    post:
+      summary: إضافة منتج جديد للمخزون
+      tags: [Inventory]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+      responses:
+        201:
+          description: تم إضافة المنتج للمخزون بنجاح
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Product added to inventory successfully"
+                  product:
+                    $ref: '#/components/schemas/Product'
+
+  /inventory/products/{id}:
+    put:
+      summary: تحديث منتج في المخزون
+      tags: [Inventory]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: معرف المنتج
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                sku:
+                  type: string
+                originalPrice:
+                  type: number
+                  minimum: 0
+                sellingPrice:
+                  type: number
+                  minimum: 0
+                quantity:
+                  type: integer
+                  minimum: 0
+                categoryId:
+                  type: string
+                description:
+                  type: string
+      responses:
+        200:
+          description: تم تحديث المنتج بنجاح
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Product updated successfully"
+                  product:
+                    $ref: '#/components/schemas/Product'
+    delete:
+      summary: حذف منتج من المخزون
+      tags: [Inventory]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: معرف المنتج
+      responses:
+        200:
+          description: تم حذف المنتج من المخزون
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Product deleted from inventory"
+
+  /inventory/products/{id}/image:
+    put:
+      summary: تحديث صورة منتج في المخزون
+      tags: [Inventory]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: معرف المنتج
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - image
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: صورة المنتج الجديدة
+      responses:
+        200:
+          description: تم تحديث صورة المنتج بنجاح
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Product image updated"
+                  imageUrl:
+                    type: string
+
+  /inventory/products/search:
+    get:
+      summary: البحث في منتجات المخزون
+      tags: [Inventory]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+          description: نص البحث
+          example: "جبنة"
+        - in: query
+          name: category
+          schema:
+            type: string
+          description: الفئة
+          example: "منتجات الألبان"
+        - in: query
+          name: minPrice
+          schema:
+            type: number
+            minimum: 0
+          description: الحد الأدنى للسعر
+          example: 20
+        - in: query
+          name: maxPrice
+          schema:
+            type: number
+            minimum: 0
+          description: الحد الأقصى للسعر
+          example: 100
+      responses:
+        200:
+          description: نتائج البحث في المخزون
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  products:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+
+  /inventory/stats:
+    get:
+      summary: إحصائيات المخزون
+      tags: [Inventory]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: إحصائيات شاملة للمخزون
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalProducts:
+                    type: integer
+                    example: 250
+                  totalValue:
+                    type: number
+                    example: 125000.00
+                    description: إجمالي قيمة المخزون
+                  totalOriginalValue:
+                    type: number
+                    example: 100000.00
+                    description: إجمالي التكلفة الأصلية
+                  lowStockItems:
+                    type: integer
+                    example: 15
+                    description: عدد المنتجات قليلة المخزون
+                  outOfStockItems:
+                    type: integer
+                    example: 5
+                    description: عدد المنتجات نفدت من المخزون
+                  categoriesCount:
+                    type: integer
+                    example: 12
+                    description: عدد الفئات
+                  averagePrice:
+                    type: number
+                    example: 45.50
+                    description: متوسط سعر البيع
+
+  /inventory/report:
+    get:
+      summary: تقرير المخزون
+      tags: [Inventory]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: startDate
+          schema:
+            type: string
+            format: date
+          description: تاريخ البداية
+          example: "2024-01-01"
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: date
+          description: تاريخ النهاية
+          example: "2024-12-31"
+        - in: query
+          name: category
+          schema:
+            type: string
+          description: تصفية حسب الفئة
+          example: "منتجات الألبان"
+      responses:
+        200:
+          description: تقرير مفصل للمخزون
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  inventoryReport:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        sku:
+                          type: string
+                        category:
+                          type: string
+                        quantity:
+                          type: integer
+                        originalPrice:
+                          type: number
+                        sellingPrice:
+                          type: number
+                        totalValue:
+                          type: number
+                        totalOriginalValue:
+                          type: number
+                        profitPerUnit:
+                          type: number
+                        potentialProfit:
+                          type: number
+                  summary:
+                    type: object
+                    properties:
+                      totalItems:
+                        type: integer
+                      totalValue:
+                        type: number
+                      totalOriginalValue:
+                        type: number
+                      totalPotentialProfit:
+                        type: number
+
+  /inventory/low-stock:
+    get:
+      summary: منتجات قليلة المخزون
+      tags: [Inventory]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: threshold
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+          description: عتبة المخزون المنخفض
+          example: 10
+      responses:
+        200:
+          description: قائمة المنتجات قليلة المخزون
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lowStockProducts:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: '#/components/schemas/Product'
+                        - type: object
+                          properties:
+                            stockStatus:
+                              type: string
+                              enum: [low, critical, out_of_stock]
+                              example: "low"
+                  totalCount:
+                    type: integer
+                    example: 15
+                  threshold:
+                    type: integer
+                    example: 10
+
+tags:
+  - name: Inventory
+    description: إدارة المخزون والمنتجات

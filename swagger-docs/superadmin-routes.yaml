@@ -1,0 +1,644 @@
+paths:
+  /superAdmin/stats:
+    get:
+      summary: إحصائيات السوبر أدمن
+      tags: [SuperAdmin]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: إحصائيات شاملة للنظام
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  usersCount:
+                    type: integer
+                    example: 150
+                    description: عدد المستخدمين المسجلين
+                  profits:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        _id:
+                          type: string
+                          nullable: true
+                        total:
+                          type: number
+                          example: 250000.00
+                    description: إجمالي أرباح النظام
+                  products:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        _id:
+                          type: string
+                        name:
+                          type: string
+                        sku:
+                          type: string
+                        originalPrice:
+                          type: number
+                        sellingPrice:
+                          type: number
+
+  /superAdmin/users/admin:
+    post:
+      summary: إنشاء أدمن جديد
+      tags: [SuperAdmin]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - firstName
+                - lastName
+                - companyName
+                - companyAddress
+                - phone
+                - email
+                - password
+              properties:
+                firstName:
+                  type: string
+                  example: "أحمد"
+                lastName:
+                  type: string
+                  example: "محمد"
+                companyName:
+                  type: string
+                  example: "شركة التجارة"
+                companyAddress:
+                  type: string
+                  example: "القاهرة، مصر"
+                phone:
+                  type: string
+                  example: "+201234567890"
+                email:
+                  type: string
+                  format: email
+                  example: "admin@company.com"
+                password:
+                  type: string
+                  minLength: 6
+                  example: "password123"
+      responses:
+        201:
+          description: تم إنشاء الأدمن بنجاح
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "تم إنشاء الأدمن بنجاح"
+                  admin:
+                    $ref: '#/components/schemas/User'
+
+  /superAdmin/users/admin/{id}:
+    put:
+      summary: تحديث أدمن
+      tags: [SuperAdmin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: معرف الأدمن
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                companyName:
+                  type: string
+                companyAddress:
+                  type: string
+                phone:
+                  type: string
+                email:
+                  type: string
+                  format: email
+      responses:
+        200:
+          description: تم تحديث الأدمن بنجاح
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    delete:
+      summary: حذف أدمن
+      tags: [SuperAdmin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: معرف الأدمن
+      responses:
+        200:
+          description: تم حذف الأدمن بنجاح
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Admin deleted"
+    get:
+      summary: جلب أدمن بالمعرف
+      tags: [SuperAdmin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: معرف الأدمن
+      responses:
+        200:
+          description: بيانات الأدمن
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /superAdmin/users/admins:
+    get:
+      summary: جلب جميع الأدمنز
+      tags: [SuperAdmin]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: قائمة جميع الأدمنز
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+
+  /superAdmin/reports/global:
+    get:
+      summary: تقرير عام شامل
+      tags: [SuperAdmin]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: تقرير شامل لجميع العمليات في النظام
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  globalStats:
+                    type: object
+                  adminPerformance:
+                    type: array
+                  systemMetrics:
+                    type: object
+
+  /superAdmin/subscriptions:
+    get:
+      summary: جلب جميع الاشتراكات
+      tags: [SuperAdmin]
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: قائمة جميع الاشتراكات
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Subscription'
+
+  /superAdmin/subscriptions/{subscriptionId}/approve:
+    post:
+      summary: الموافقة أو رفض اشتراك
+      tags: [SuperAdmin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: subscriptionId
+          required: true
+          schema:
+            type: string
+          description: معرف الاشتراك
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - status
+              properties:
+                status:
+                  type: string
+                  enum: [approved, rejected]
+                  example: "approved"
+                rejectionReason:
+                  type: string
+                  description: سبب الرفض (مطلوب عند الرفض)
+                  example: "إيصال غير واضح"
+      responses:
+        200:
+          description: تم تحديث حالة الاشتراك بنجاح
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Subscription status updated successfully"
+                  subscription:
+                    $ref: '#/components/schemas/Subscription'
+
+  /superAdmin/notifications/send:
+    post:
+      summary: إرسال إشعارات للمستخدمين
+      tags: [SuperAdmin]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - recipients
+                - subject
+                - message
+              properties:
+                recipients:
+                  type: object
+                  required:
+                    - type
+                  properties:
+                    type:
+                      type: string
+                      enum: [all, specific, verified, unverified]
+                      example: "all"
+                      description: نوع المستقبلين
+                    userIds:
+                      type: array
+                      items:
+                        type: string
+                      description: معرفات المستخدمين (مطلوب عند type=specific)
+                      example: ["507f1f77bcf86cd799439011", "507f1f77bcf86cd799439012"]
+                subject:
+                  type: string
+                  example: "إشعار مهم من إدارة النظام"
+                message:
+                  type: string
+                  example: "مرحباً، نود إعلامكم بالتحديثات الجديدة في النظام..."
+                type:
+                  type: string
+                  enum: [email]
+                  default: email
+                  description: نوع الإشعار
+      responses:
+        200:
+          description: تم إرسال الإشعارات بنجاح
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Notifications sent successfully"
+                  sentCount:
+                    type: integer
+                    example: 25
+                  failedCount:
+                    type: integer
+                    example: 2
+
+  /superAdmin/products:
+    get:
+      summary: جلب جميع المنتجات عبر جميع الأدمنز
+      tags: [SuperAdmin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: adminId
+          schema:
+            type: string
+          description: تصفية حسب معرف الأدمن
+        - in: query
+          name: categoryId
+          schema:
+            type: string
+          description: تصفية حسب معرف الفئة
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: رقم الصفحة
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: عدد العناصر في الصفحة
+        - in: query
+          name: minPrice
+          schema:
+            type: number
+            minimum: 0
+          description: الحد الأدنى للسعر
+        - in: query
+          name: maxPrice
+          schema:
+            type: number
+            minimum: 0
+          description: الحد الأقصى للسعر
+      responses:
+        200:
+          description: قائمة المنتجات مع الترقيم والإحصائيات
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                  filters:
+                    type: object
+                  stats:
+                    type: object
+                  products:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+                  availableFilters:
+                    type: object
+                    properties:
+                      admins:
+                        type: array
+                      categories:
+                        type: array
+
+  /superAdmin/invoices:
+    get:
+      summary: جلب جميع الفواتير عبر جميع الأدمنز
+      tags: [SuperAdmin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: adminId
+          schema:
+            type: string
+          description: تصفية حسب معرف الأدمن
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: رقم الصفحة
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: عدد العناصر في الصفحة
+        - in: query
+          name: minAmount
+          schema:
+            type: number
+            minimum: 0
+          description: الحد الأدنى للمبلغ
+        - in: query
+          name: maxAmount
+          schema:
+            type: number
+            minimum: 0
+          description: الحد الأقصى للمبلغ
+        - in: query
+          name: startDate
+          schema:
+            type: string
+            format: date
+          description: تاريخ البداية
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: date
+          description: تاريخ النهاية
+      responses:
+        200:
+          description: قائمة الفواتير مع الإحصائيات الشاملة
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                  filters:
+                    type: object
+                  stats:
+                    type: object
+                  adminStats:
+                    type: array
+                  dailyStats:
+                    type: array
+                  invoices:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Invoice'
+                  availableAdmins:
+                    type: array
+
+  /superAdmin/admins/{id}/products:
+    get:
+      summary: جلب منتجات أدمن محدد
+      tags: [SuperAdmin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: معرف الأدمن
+        - in: query
+          name: categoryId
+          schema:
+            type: string
+          description: تصفية حسب معرف الفئة
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - in: query
+          name: minPrice
+          schema:
+            type: number
+            minimum: 0
+        - in: query
+          name: maxPrice
+          schema:
+            type: number
+            minimum: 0
+      responses:
+        200:
+          description: منتجات الأدمن المحدد مع الإحصائيات
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  admin:
+                    type: object
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                  filters:
+                    type: object
+                  stats:
+                    type: object
+                  categoryStats:
+                    type: array
+                  products:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+
+  /superAdmin/admins/{id}/invoices:
+    get:
+      summary: جلب فواتير أدمن محدد
+      tags: [SuperAdmin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: معرف الأدمن
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - in: query
+          name: minAmount
+          schema:
+            type: number
+            minimum: 0
+        - in: query
+          name: maxAmount
+          schema:
+            type: number
+            minimum: 0
+        - in: query
+          name: startDate
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: date
+      responses:
+        200:
+          description: فواتير الأدمن المحدد مع التحليلات المفصلة
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  admin:
+                    type: object
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                  filters:
+                    type: object
+                  stats:
+                    type: object
+                  topProducts:
+                    type: array
+                  topCustomers:
+                    type: array
+                  monthlyStats:
+                    type: array
+                  dailyStats:
+                    type: array
+                  invoices:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Invoice'
+
+tags:
+  - name: SuperAdmin
+    description: إدارة النظام للسوبر أدمن
