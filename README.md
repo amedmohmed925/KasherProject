@@ -1,1034 +1,823 @@
-# نظام إدارة المتاجر - Kasher Project
+# Kasher Project - نظام إدارة المتاجر
 
-## 📝 تقرير التحليل والمراجعة
+## نظرة عامة
+نظام إدارة متاجر متعدد المستأجرين (Multi-tenant) مطور بـ Node.js و Express.js مع MongoDB، مخصص لإدارة المنتجات والفواتير والمخزون والاشتراكات للمتاجر والسوبر ماركت.
 
-### ✅ **المشاكل التي تم إصلاحها:**
-1. استخدام `tenantId` بدلاً من `adminId` في عدة controllers
-2. إصلاح JWT token ليتضمن `adminId` فقط
-3. توحيد جميع العمليات لتستخدم `adminId`
+## المعلومات الأساسية للمشروع
 
-### 🚀### 2.5 قائمة الفواتير مع فلترة
-```http
-GET /api/admin/invoices/list?page=1&limit=10&date=2024-01-01
-Authorization: Bearer <token>
-```
+- **اسم المشروع**: Kasher Backend
+- **الإصدار**: 1.0.0
+- **التقنيات**: Node.js, Express.js, MongoDB, JWT Authentication
+- **نوع النظام**: Multi-tenant Cashier System
+- **البيئة**: Production Ready (Vercel Compatible)
 
-### 2.6 إدارة الملف الشخصي
+## هيكل البيانات الأساسي
 
-#### جلب بيانات الملف الشخصي
-```http
-GET /api/admin/profile
-Authorization: Bearer <token>
-```
+### نماذج البيانات (Models)
+- **User**: إدارة المستخدمين (Admin, SuperAdmin)
+- **Product**: إدارة المنتجات
+- **Invoice**: إدارة الفواتير
+- **Category**: تصنيفات المنتجات
+- **Subscription**: إدارة الاشتراكات
+- **Blacklist**: قائمة التوكنات المحظورة
+- **Token**: إدارة Refresh Tokens
 
-**Response:**
-```json
-{
-  "success": true,
-  "admin": {
-    "id": "507f1f77bcf86cd799439011",
-    "firstName": "محمد",
-    "lastName": "أحمد",
-    "companyName": "متجر الأمانة",
-    "companyAddress": "شارع الجامعة، القاهرة، مصر",
-    "email": "admin@example.com",
-    "phone": "01234567890",
-    "role": "admin",
-    "isVerified": true,
-    "createdAt": "2024-01-01T00:00:00.000Z"
-  }
-}
-```
-
-#### تحديث الملف الشخصي
-```http
-PUT /api/admin/profile
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "firstName": "محمد محدث",
-  "lastName": "أحمد محدث", 
-  "companyName": "متجر الأمانة المحدث",
-  "companyAddress": "العنوان الجديد",
-  "phone": "01987654321",
-  "currentPassword": "oldpassword123", // مطلوب فقط لتغيير كلمة المرور
-  "newPassword": "newpassword123" // اختياري
-}
-```
-
-### 2.7 التحليلات المتقدمة
-
-#### تحليلات متقدمة مع فلاتر
-```http
-GET /api/admin/analytics/advanced?period=month&startDate=2024-01-01&endDate=2024-12-31
-Authorization: Bearer <token>
-```
-
-**المعايير المتاحة:**
-- `period`: week | month | year (افتراضي: month)
-- `startDate`, `endDate`: نطاق تاريخ مخصص
-
-**Response:**
-```json
-{
-  "success": true,
-  "period": "month",
-  "dateRange": {
-    "$gte": "2024-01-01T00:00:00.000Z",
-    "$lte": "2024-12-31T23:59:59.999Z"
-  },
-  "invoiceStats": {
-    "totalInvoices": 150,
-    "totalRevenue": 75000.00,
-    "averageInvoiceValue": 500.00
-  },
-  "inventoryStats": {
-    "totalProducts": 200,
-    "totalQuantity": 5000,
-    "totalValue": 125000.00,
-    "lowStockProducts": 15,
-    "outOfStockProducts": 3
-  },
-  "topProducts": [
-    {
-      "_id": "productId",
-      "productName": "حليب نادك",
-      "totalSold": 100,
-      "totalRevenue": 700.00
-    }
-  ],
-  "categoryStats": [...],
-  "dailySales": [...]
-}
-```نظام بعد الإصلاح - جميع Endpoints تعمل بشكل صحيح**
+### أنواع المستخدمين
+1. **Admin**: مدير المتجر
+2. **SuperAdmin**: المدير العام للنظام
 
 ---
 
-## وصف النظام
+# توثيق الـ API Endpoints
 
-نظام إدارة شامل للمتاجر والسوبر ماركت يوفر حلول متكاملة لإدارة المخزون والفواتير والعملاء مع نظام اشتراكات مرن.
-
-### المميزات الرئيسية
-- 🔐 نظام أمان متقدم مع JWT وحماية من XSS
-- 👥 إدارة أدوار المستخدمين (Admin/Super Admin)
-- 📦 إدارة مخزون شاملة مع تنبيهات الكميات المنخفضة
-- 🧾 نظام فواتير متطور مع تتبع الأرباح
-- 📊 تقارير وإحصائيات تفصيلية
-- 💳 نظام اشتراكات مع خطط متعددة (Trial/Monthly/Yearly)
-- 📧 نظام إشعارات بالبريد الإلكتروني
-- 🔄 حماية من Rate Limiting
-- 🖼️ رفع وإدارة صور المنتجات مع Cloudinary
-- 🗂️ ربط المنتجات بالفئات عبر ObjectId References
-
----
-
-## البنية التقنية
-
-### التقنيات المستخدمة
-- **Backend**: Node.js + Express.js
-- **Database**: MongoDB + Mongoose
-- **Authentication**: JWT + Refresh Tokens
-- **Security**: Helmet, XSS-Clean, Rate Limiting
-- **Email**: NodeMailer
-- **File Upload**: Multer + Cloudinary (رفع الصور مع تحسين تلقائي)
-- **Image Storage**: Cloudinary (تخزين سحابي مع تحسين وضغط الصور)
-- **Validation**: Express-Validator
-
----
-
-## 🔒 نظام الحماية والأمان
-
-### JWT Token Structure
-```json
-{
-  "id": "user_id",
-  "role": "admin|superAdmin"
-}
+## Base URL
 ```
-
-### Rate Limiting
-- **العام**: 100 طلب كل 15 دقيقة
-- **استثناءات**: `/api/admin/products/*` و `/api/superAdmin/*`
-
----
-
-## 🌐 API Endpoints - دليل شامل
-
-### Base URL
-```
+Production: https://your-domain.vercel.app/api
 Development: http://localhost:3000/api
 ```
 
 ---
 
-## 🔑 1. Authentication Endpoints
+## 🔐 Authentication Endpoints
+**Base Route**: `/api/auth`
 
-### 📋 **متطلبات التسجيل:**
-- ✅ الاسم الأول والأخير
-- ✅ اسم الشركة وعنوانها (جديد!)
-- ✅ رقم الهاتف
-- ✅ البريد الإلكتروني
-- ✅ كلمة المرور (6 أحرف على الأقل)
-- ✅ تأكيد كلمة المرور
-
-### 1.1 التسجيل
+### 1. تسجيل مستخدم جديد (Admin)
 ```http
 POST /api/auth/register
-Content-Type: application/json
+```
 
+**Request Body:**
+```json
 {
-  "firstName": "محمد",
-  "lastName": "أحمد",
-  "companyName": "متجر الأمانة",
-  "companyAddress": "شارع الجامعة، القاهرة، مصر",
-  "phone": "01234567890",
-  "email": "admin@example.com", 
-  "password": "password123",
-  "confirmPassword": "password123"
+  "firstName": "string (required)",
+  "lastName": "string (required)", 
+  "companyName": "string (required)",
+  "companyAddress": "string (required)",
+  "phone": "string (required)",
+  "email": "string (required, email format)",
+  "password": "string (required, min 6 chars)",
+  "confirmPassword": "string (required)"
 }
 ```
 
-**Response:**
+**Response (201):**
 ```json
 {
   "message": "تم التسجيل بنجاح. يرجى التحقق من بريدك الإلكتروني."
 }
 ```
 
-### 1.2 تسجيل الدخول
-```http
-POST /api/auth/login
-Content-Type: application/json
+---
 
-{
-  "email": "admin@example.com",
-  "password": "password123"
-}
-```
-
-### 1.3 تفعيل الحساب
+### 2. تفعيل الحساب عبر OTP
 ```http
 POST /api/auth/verify-otp
-Content-Type: application/json
+```
 
+**Request Body:**
+```json
 {
-  "email": "admin@example.com",
-  "otp": "123456"
+  "email": "string (required, email)",
+  "otp": "string (required, 6 digits)"
 }
 ```
 
-### 1.4 نسيان كلمة المرور
-```http
-POST /api/auth/forgot-password
-Content-Type: application/json
-
+**Response (200):**
+```json
 {
-  "email": "admin@example.com"
+  "message": "Email verified successfully"
 }
-```
-
-### 1.5 إعادة تعيين كلمة المرور
-```http
-POST /api/auth/reset-password
-Content-Type: application/json
-
-{
-  "email": "admin@example.com",
-  "otp": "123456",
-  "newPassword": "newpassword123",
-  "confirmNewPassword": "newpassword123"
-}
-```
-
-### 1.6 تحديث Token
-```http
-POST /api/auth/refresh-token
-Content-Type: application/json
-
-{
-  "refreshToken": "eyJhbGciOiJIUzI1NiIs..."
-}
-```
-
-### 1.7 تسجيل الخروج
-```http
-POST /api/auth/logout
-Authorization: Bearer <token>
 ```
 
 ---
 
-## 👨‍💼 2. Admin Endpoints
-
-**جميع endpoints تتطلب**: `Authorization: Bearer <token>`
-
-### 2.1 إحصائيات الأدمن
+### 3. تسجيل الدخول
 ```http
-GET /api/admin/stats
-Authorization: Bearer <token>
+POST /api/auth/login
 ```
-**Response:**
+
+**Request Body:**
 ```json
 {
-  "invoicesCount": 25,
-  "todayProfit": 1500.50,
-  "monthProfit": 45000.75,
-  "yearProfit": 540000.00
+  "email": "string (required, email)",
+  "password": "string (required)"
 }
 ```
 
-### 2.2 إحصائيات لوحة التحكم المتقدمة
-```http
-GET /api/admin/dashboard/analytics
-Authorization: Bearer <token>
-```
-
-### 2.3 تحليلات متقدمة مع فلاتر
-```http
-GET /api/admin/analytics/advanced?period=month&startDate=2024-01-01&endDate=2024-12-31
-Authorization: Bearer <token>
-```
-**Parameters:**
-- `period`: week | month | year
-- `startDate`: تاريخ البداية (اختياري)
-- `endDate`: تاريخ النهاية (اختياري)
-
-**Response:**
+**Response (200):**
 ```json
 {
-  "success": true,
-  "period": "month",
-  "invoiceStats": {
-    "totalInvoices": 150,
-    "totalRevenue": 75000.00,
-    "averageInvoiceValue": 500.00
-  },
-  "inventoryStats": {
-    "totalProducts": 200,
-    "totalQuantity": 1500,
-    "totalValue": 300000.00,
-    "lowStockProducts": 15,
-    "outOfStockProducts": 3
-  },
-  "topProducts": [...],
-  "categoryStats": [...],
-  "dailySales": [...]
-}
-```
-
-### 2.4 إدارة الملف الشخصي
-
-#### جلب بيانات الملف الشخصي
-```http
-GET /api/admin/profile
-Authorization: Bearer <token>
-```
-
-#### تحديث الملف الشخصي
-```http
-PUT /api/admin/profile
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "firstName": "محمد",
-  "lastName": "أحمد",
-  "companyName": "متجر الأمانة المحدث",
-  "companyAddress": "العنوان الجديد",
-  "phone": "01234567890",
-  "currentPassword": "current123", // مطلوب فقط لتغيير كلمة المرور
-  "newPassword": "newpassword123"  // اختياري
-}
-```
-
-### 2.5 جلب بيانات أدمن بالـ ID
-```http
-GET /api/admin/admin/:id
-Authorization: Bearer <token>
-```
-
-### 2.6 تقارير مخصصة
-```http
-GET /api/admin/reports?type=daily&startDate=2024-01-01&endDate=2024-12-31
-Authorization: Bearer <token>
-```
-
-### 2.7 قائمة الفواتير مع فلترة
-```http
-GET /api/admin/invoices/list?page=1&limit=10&date=2024-01-01
-Authorization: Bearer <token>
-```
-
----
-
-## 📦 3. Products Management
-
-### 3.1 جلب جميع المنتجات
-```http
-GET /api/admin/products
-Authorization: Bearer <token>
-```
-
-### 3.2 إضافة منتج جديد مع رفع الصور
-```http
-POST /api/admin/products
-Authorization: Bearer <token>
-Content-Type: multipart/form-data
-
-Form Data:
-name: حليب نادك
-sku: NADEC001
-originalPrice: 5.50
-sellingPrice: 7.00
-quantity: 100
-categoryId: 507f1f77bcf86cd799439011
-description: حليب طازج كامل الدسم
-image: [file] (اختياري - صورة المنتج، حد أقصى 5MB)
-```
-
-**ملاحظات مهمة:** 
-- يجب إضافة الفئات أولاً قبل إضافة المنتجات، واستخدام `categoryId` من الفئات المضافة
-- رفع الصور اختياري ويتم حفظها على Cloudinary مع تحسين تلقائي
-- الصور المقبولة: jpg, png, gif, webp (حد أقصى 5MB)
-
-### 3.3 تحديث منتج
-```http
-PUT /api/admin/products/:id
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "name": "حليب نادك محدث",
-  "quantity": 150,
-  "sellingPrice": 7.50,
-  "categoryId": "507f1f77bcf86cd799439011"
-}
-```
-**ملاحظة:** جميع الحقول اختيارية - يتم تحديث الحقول المرسلة فقط
-
-### 3.4 تحديث صورة المنتج فقط
-```http
-PUT /api/admin/products/:id/image
-Authorization: Bearer <token>
-Content-Type: multipart/form-data
-
-Form Data:
-image: [file] (مطلوب - صورة المنتج الجديدة، حد أقصى 5MB)
-```
-**ملاحظة:** يتم حذف الصورة القديمة تلقائياً من Cloudinary
-
-### 3.5 حذف منتج
-```http
-DELETE /api/admin/products/:id
-Authorization: Bearer <token>
-```
-
-### 3.6 البحث في المنتجات
-```http
-GET /api/admin/products/search?q=حليب&category=ألبان&minPrice=5&maxPrice=10
-Authorization: Bearer <token>
-```
-
-**معايير البحث:**
-- `q`: البحث في اسم المنتج أو الوصف
-- `category`: البحث حسب الفئة
-- `minPrice`: الحد الأدنى للسعر
-- `maxPrice`: الحد الأقصى للسعر
-
----
-
-## 📂 4. Categories Management
-
-### 🔄 **Workflow إضافة منتج مع الصور:**
-1. **أولاً:** إضافة فئة (Categories)
-2. **ثانياً:** إضافة منتج مع ربطه بالفئة (categoryId) ورفع الصورة
-3. **اختياري:** تحديث صورة المنتج لاحقاً
-
-### 4.1 جلب جميع الفئات
-```http
-GET /api/admin/categories
-Authorization: Bearer <token>
-```
-
-### 4.2 إضافة فئة جديدة
-```http
-POST /api/admin/categories
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "name": "منتجات ألبان"
-}
-```
-
-**Response:**
-```json
-{
-  "message": "Category created",
-  "category": {
-    "_id": "507f1f77bcf86cd799439011",
-    "name": "منتجات ألبان",
-    "adminId": "507f1f77bcf86cd799439010",
-    "createdAt": "2024-01-01T12:00:00.000Z"
+  "token": "jwt_access_token",
+  "refreshToken": "jwt_refresh_token",
+  "user": {
+    "id": "user_id",
+    "firstName": "string",
+    "lastName": "string",
+    "email": "string",
+    "role": "admin|superAdmin",
+    "companyName": "string",
+    "isVerified": true
   }
 }
 ```
 
-**💡 نصيحة:** احفظ الـ `_id` لاستخدامه كـ `categoryId` عند إضافة المنتجات!
+---
 
-### 4.3 تحديث فئة
+### 4. نسيان كلمة المرور
 ```http
-PUT /api/admin/categories/:id
-Authorization: Bearer <token>
-Content-Type: application/json
+POST /api/auth/forgot-password
+```
 
+**Request Body:**
+```json
 {
-  "name": "منتجات الألبان والأجبان"
+  "email": "string (required, email)"
 }
 ```
 
-### 4.4 حذف فئة
-```http
-DELETE /api/admin/categories/:id
-Authorization: Bearer <token>
+**Response (200):**
+```json
+{
+  "message": "Reset code sent to email"
+}
 ```
 
 ---
 
-## 🧾 5. Invoices Management
-
-### 5.1 جلب جميع الفواتير
+### 5. إعادة تعيين كلمة المرور
 ```http
-GET /api/admin/invoices
-Authorization: Bearer <token>
+POST /api/auth/reset-password
 ```
 
-### 5.2 إضافة فاتورة جديدة
+**Request Body:**
+```json
+{
+  "email": "string (required, email)",
+  "otp": "string (required, 6 digits)",
+  "newPassword": "string (required, min 6 chars)",
+  "confirmNewPassword": "string (required)"
+}
+```
+
+**Response (200):**
+```json
+{
+  "message": "Password reset successfully"
+}
+```
+
+---
+
+### 6. تحديث Access Token
+```http
+POST /api/auth/refresh-token
+```
+
+**Request Body:**
+```json
+{
+  "refreshToken": "string (required)"
+}
+```
+
+**Response (200):**
+```json
+{
+  "token": "new_jwt_access_token"
+}
+```
+
+---
+
+### 7. تسجيل الخروج
+```http
+POST /api/auth/logout
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Response (200):**
+```json
+{
+  "message": "Logged out successfully"
+}
+```
+
+---
+
+## 👨‍💼 Admin Endpoints
+**Base Route**: `/api/admin`
+**Authentication**: Bearer Token Required
+**Authorization**: Admin Role + Active Subscription
+
+### إدارة الفئات (Categories)
+
+#### 1. جلب جميع الفئات
+```http
+GET /api/admin/categories
+```
+
+#### 2. إضافة فئة جديدة
+```http
+POST /api/admin/categories
+```
+**Request Body:**
+```json
+{
+  "name": "string (required)"
+}
+```
+
+#### 3. تحديث فئة
+```http
+PUT /api/admin/categories/:id
+```
+**Request Body:**
+```json
+{
+  "name": "string (required)"
+}
+```
+
+#### 4. حذف فئة
+```http
+DELETE /api/admin/categories/:id
+```
+
+---
+
+### إدارة المنتجات (Products)
+
+#### 1. جلب جميع المنتجات
+```http
+GET /api/admin/products
+```
+
+#### 2. إضافة منتج جديد (مع صورة)
+```http
+POST /api/admin/products
+```
+**Content-Type**: `multipart/form-data`
+
+**Form Data:**
+```json
+{
+  "name": "string (required)",
+  "sku": "string (required, unique per admin)",
+  "originalPrice": "number (required)",
+  "sellingPrice": "number (required)", 
+  "quantity": "number (required, >= 0)",
+  "categoryId": "string (required, ObjectId)",
+  "description": "string (optional)",
+  "image": "file (optional, max 5MB, images only)"
+}
+```
+
+#### 3. تحديث منتج
+```http
+PUT /api/admin/products/:id
+```
+**Request Body:**
+```json
+{
+  "name": "string (optional)",
+  "sku": "string (optional)",
+  "originalPrice": "number (optional)",
+  "sellingPrice": "number (optional)",
+  "quantity": "number (optional, >= 0)",
+  "categoryId": "string (optional, ObjectId)",
+  "description": "string (optional)",
+  "image": "string (optional, URL)"
+}
+```
+
+#### 4. تحديث صورة المنتج
+```http
+PUT /api/admin/products/:id/image
+```
+**Content-Type**: `multipart/form-data`
+**Form Data:**
+```json
+{
+  "image": "file (required, max 5MB, images only)"
+}
+```
+
+#### 5. البحث في المنتجات
+```http
+GET /api/admin/products/search?q=search_term&category=category_name&minPrice=100&maxPrice=500
+```
+
+#### 6. حذف منتج
+```http
+DELETE /api/admin/products/:id
+```
+
+---
+
+### الإحصائيات والتقارير
+
+#### 1. إحصائيات الأدمن
+```http
+GET /api/admin/stats
+```
+**Response:**
+```json
+{
+  "totalInvoices": 150,
+  "dailyProfit": 1250.50,
+  "monthlyProfit": 35000.75,
+  "yearlyProfit": 420000.00
+}
+```
+
+#### 2. تقارير مفصلة
+```http
+GET /api/admin/reports
+```
+
+#### 3. تحليلات لوحة التحكم
+```http
+GET /api/admin/dashboard/analytics
+```
+
+#### 4. تحليلات متقدمة مع فلاتر
+```http
+GET /api/admin/analytics/advanced?startDate=2024-01-01&endDate=2024-12-31
+```
+
+---
+
+### إدارة الملف الشخصي
+
+#### 1. جلب بيانات الملف الشخصي
+```http
+GET /api/admin/profile
+```
+
+#### 2. تحديث الملف الشخصي
+```http
+PUT /api/admin/profile
+```
+**Request Body:**
+```json
+{
+  "firstName": "string (optional)",
+  "lastName": "string (optional)",
+  "companyName": "string (optional)",
+  "companyAddress": "string (optional)",
+  "phone": "string (optional)",
+  "currentPassword": "string (required if changing password)",
+  "newPassword": "string (optional, min 6 chars)"
+}
+```
+
+#### 3. جلب أدمن بالـ ID
+```http
+GET /api/admin/admin/:id
+```
+
+---
+
+## 🧾 Invoice Endpoints  
+**Base Route**: `/api/admin/invoices`
+**Authentication**: Bearer Token Required
+**Authorization**: Admin Role + Active Subscription
+
+#### 1. إضافة فاتورة جديدة
 ```http
 POST /api/admin/invoices/add-invoices
-Authorization: Bearer <token>
-Content-Type: application/json
-
+```
+**Request Body:**
+```json
 {
   "products": [
     {
-      "sku": "NADEC001", 
-      "quantity": 2
+      "sku": "string (required)",
+      "quantity": "number (required)"
     }
   ],
-  "customerName": "أحمد محمد"
+  "customerName": "string (optional)"
 }
 ```
 
-### 5.3 البحث في الفواتير
+#### 2. جلب جميع الفواتير
 ```http
-GET /api/admin/invoices/search?customerName=أحمد&price=100&date=2024-01-01
-Authorization: Bearer <token>
+GET /api/admin/invoices/
 ```
 
-### 5.4 حساب أرباح فاتورة محددة
+#### 3. البحث وفلترة الفواتير
+```http
+GET /api/admin/invoices/search?customerName=john&price=100&date=2024-01-01
+```
+
+#### 4. جلب ربح فاتورة محددة
 ```http
 GET /api/admin/invoices/profit/:id
-Authorization: Bearer <token>
 ```
 
-### 5.5 جلب جميع الأرباح
+#### 5. جلب جميع الأرباح
 ```http
 GET /api/admin/invoices/profits
-Authorization: Bearer <token>
+```
+
+#### 6. جلب جميع الفواتير (تفاصيل كاملة)
+```http
+GET /api/admin/all-invoices
+```
+
+#### 7. قائمة الفواتير
+```http
+GET /api/admin/invoices
 ```
 
 ---
 
-## 📦 6. Inventory Management
+## 📦 Inventory Endpoints
+**Base Route**: `/api/inventory`
+**Authentication**: Bearer Token Required  
+**Authorization**: Admin Role + Active Subscription
 
-### 6.1 إحصائيات المخزون
+#### 1. جلب جميع المنتجات
 ```http
-GET /api/inventory/stats
-Authorization: Bearer <token>
+GET /api/inventory/products
 ```
 
+#### 2. إضافة منتج جديد
+```http
+POST /api/inventory/products
+```
+**Content-Type**: `multipart/form-data`
+**Form Data:** (نفس بيانات `/api/admin/products`)
+
+#### 3. تحديث منتج
+```http
+PUT /api/inventory/products/:id
+```
+
+#### 4. تحديث صورة المنتج
+```http
+PUT /api/inventory/products/:id/image
+```
+
+#### 5. حذف منتج
+```http
+DELETE /api/inventory/products/:id
+```
+
+#### 6. البحث في المنتجات
+```http
+GET /api/inventory/products/search?q=search&category=electronics&minPrice=50&maxPrice=200
+```
+
+#### 7. إحصائيات المخزون
+```http
+GET /api/inventory/stats
+```
+
+#### 8. تقرير المخزون
+```http
+GET /api/inventory/report?startDate=2024-01-01&endDate=2024-12-31&category=electronics
+```
+
+#### 9. منتجات قليلة المخزون
+```http
+GET /api/inventory/low-stock?threshold=10
+```
+
+---
+
+## 🔧 SuperAdmin Endpoints
+**Base Route**: `/api/superAdmin`  
+**Authentication**: Bearer Token Required
+**Authorization**: SuperAdmin Role Only
+
+### إدارة المستخدمين
+
+#### 1. إحصائيات السوبر أدمن
+```http
+GET /api/superAdmin/stats
+```
+
+#### 2. إنشاء أدمن جديد
+```http
+POST /api/superAdmin/users/admin
+```
+**Request Body:**
+```json
+{
+  "firstName": "string (required)",
+  "lastName": "string (required)",
+  "companyName": "string (required)",
+  "companyAddress": "string (required)", 
+  "phone": "string (required)",
+  "email": "string (required, email)",
+  "password": "string (required, min 6 chars)"
+}
+```
+
+#### 3. تحديث أدمن
+```http
+PUT /api/superAdmin/users/admin/:id
+```
+
+#### 4. حذف أدمن
+```http
+DELETE /api/superAdmin/users/admin/:id
+```
+
+#### 5. جلب جميع الأدمنز
+```http
+GET /api/superAdmin/users/admins
+```
+
+#### 6. جلب أدمن بالـ ID
+```http
+GET /api/superAdmin/users/admin/:id
+```
+
+---
+
+### التقارير العامة
+
+#### 1. تقرير عام شامل
+```http
+GET /api/superAdmin/reports/global
+```
+
+---
+
+### إدارة الاشتراكات
+
+#### 1. جلب جميع الاشتراكات
+```http
+GET /api/superAdmin/subscriptions
+```
+
+#### 2. الموافقة/رفض اشتراك
+```http
+POST /api/superAdmin/subscriptions/:subscriptionId/approve
+```
+**Request Body:**
+```json
+{
+  "status": "approved|rejected (required)",
+  "rejectionReason": "string (required if status=rejected)"
+}
+```
+
+---
+
+### إرسال الإشعارات
+
+#### 1. إرسال إشعار للمستخدمين
+```http
+POST /api/superAdmin/notifications/send
+```
+**Request Body:**
+```json
+{
+  "recipients": {
+    "type": "all|specific|verified|unverified (required)",
+    "userIds": ["array of user IDs (required if type=specific)"]
+  },
+  "subject": "string (required)",
+  "message": "string (required)",
+  "type": "email (optional)"
+}
+```
+
+---
+
+### إدارة المنتجات والفواتير (عرض شامل)
+
+#### 1. جلب جميع المنتجات عبر كل الأدمنز
+```http
+GET /api/superAdmin/products?adminId=xxx&categoryId=xxx&page=1&limit=50&minPrice=100&maxPrice=500
+```
+
+#### 2. جلب جميع الفواتير عبر كل الأدمنز  
+```http
+GET /api/superAdmin/invoices?adminId=xxx&page=1&limit=50&minAmount=100&maxAmount=1000&startDate=2024-01-01&endDate=2024-12-31
+```
+
+#### 3. جلب منتجات أدمن محدد
+```http
+GET /api/superAdmin/admins/:id/products?categoryId=xxx&page=1&limit=50&minPrice=100&maxPrice=500
+```
+
+#### 4. جلب فواتير أدمن محدد
+```http
+GET /api/superAdmin/admins/:id/invoices?page=1&limit=50&minAmount=100&maxAmount=1000&startDate=2024-01-01&endDate=2024-12-31
+```
+
+---
+
+## 💳 Subscription Endpoints
+**Base Route**: `/api/subscriptions`
+
+#### 1. رفع إيصال اشتراك (Admin)
+```http
+POST /api/subscriptions/subscriptions/upload
+```
+**Authentication**: Bearer Token Required (Admin)
+**Content-Type**: `multipart/form-data`
+
+**Form Data:**
+```json
+{
+  "plan": "monthly|yearly|custom (required)",
+  "paidAmountText": "string (required)",
+  "duration": "month|year|custom (required)",
+  "price": "number (required)",
+  "startDate": "string (required, date)",
+  "endDate": "string (required, date)",
+  "receipt": "file (required, receipt image)"
+}
+```
+
+#### 2. جلب جميع الاشتراكات (SuperAdmin)
+```http
+GET /api/subscriptions/
+```
+**Authentication**: Bearer Token Required (SuperAdmin)
+
+#### 3. الموافقة/رفض اشتراك (SuperAdmin)
+```http
+POST /api/subscriptions/:subscriptionId/approve
+```
+**Authentication**: Bearer Token Required (SuperAdmin)
+**Request Body:**
+```json
+{
+  "status": "approved|rejected (required)",
+  "rejectionReason": "string (required if status=rejected)"
+}
+```
+
+---
+
+## 🏥 Health & Utility Endpoints
+
+#### 1. فحص حالة النظام
+```http
+GET /api/health
+```
 **Response:**
 ```json
 {
-  "overview": {
-    "totalProducts": 500,
-    "totalQuantity": 5000,
-    "totalOriginalValue": 125000.00,
-    "totalSellingValue": 250000.00,
-    "expectedProfit": 125000.00,
-    "lowStockProducts": 15,
-    "outOfStockProducts": 3
-  },
-  "topProfitableProducts": [...]
+  "status": "success",
+  "message": "API is working perfectly! 🚀",
+  "timestamp": "2024-01-01T00:00:00.000Z",
+  "uptime": 3600,
+  "environment": "production",
+  "version": "1.0.0",
+  "database": "connected"
 }
 ```
 
-### 6.2 تقرير المخزون المفصل
+#### 2. الصفحة الرئيسية
 ```http
-GET /api/inventory/report?category=ألبان&startDate=2024-01-01&endDate=2024-12-31
-Authorization: Bearer <token>
+GET /
 ```
-
-### 6.3 المنتجات منخفضة المخزون
-```http
-GET /api/inventory/low-stock?threshold=10
-Authorization: Bearer <token>
-```
-
-### 6.4 إدارة المنتجات عبر Inventory
-```http
-# جلب جميع المنتجات
-GET /api/inventory/products
-Authorization: Bearer <token>
-
-# إضافة منتج مع رفع الصورة
-POST /api/inventory/products
-Authorization: Bearer <token>
-Content-Type: multipart/form-data
-
-# تحديث منتج  
-PUT /api/inventory/products/:id
-Authorization: Bearer <token>
-Content-Type: application/json
-
-# تحديث صورة المنتج فقط
-PUT /api/inventory/products/:id/image
-Authorization: Bearer <token>
-Content-Type: multipart/form-data
-
-# حذف منتج
-DELETE /api/inventory/products/:id
-Authorization: Bearer <token>
-
-# البحث في المنتجات
-GET /api/inventory/products/search?q=نص البحث&category=الفئة&minPrice=5&maxPrice=100
-Authorization: Bearer <token>
-```
-
----
-
-## 💳 7. Subscriptions Management
-
-### 7.1 رفع إيصال الاشتراك
-```http
-POST /api/subscriptions/subscriptions/upload
-Authorization: Bearer <token>
-Content-Type: multipart/form-data
-
-{
-  "plan": "monthly",
-  "paidAmountText": "49 جنيه",
-  "duration": "month",
-  "price": 49,
-  "startDate": "2024-01-01",
-  "endDate": "2024-02-01",
-  "receipt": [file],
-  "customNotes": "ملاحظات إضافية"
-}
-```
-
-### أسعار الاشتراكات
-- **Trial**: مجاني لمدة 30 يوم (السعر: 0)
-- **Monthly**: 49 جنيه شهرياً
-- **Yearly**: 499 جنيه سنوياً  
-- **Custom**: حسب الاتفاق
-
----
-
-## 👑 8. Super Admin Endpoints
-
-**جميع endpoints تتطلب**: `Authorization: Bearer <superAdmin_token>`
-
-### 8.1 إحصائيات السوبر أدمن
-```http
-GET /api/superAdmin/stats
-Authorization: Bearer <superAdmin_token>
-```
-
-### 8.2 إدارة الأدمن
-
-#### جلب جميع الأدمن
-```http
-GET /api/superAdmin/users/admins
-Authorization: Bearer <superAdmin_token>
-```
-
-#### جلب أدمن بالـ ID
-```http
-GET /api/superAdmin/users/admin/:id
-Authorization: Bearer <superAdmin_token>
-```
-
-#### إنشاء أدمن جديد
-```http
-POST /api/superAdmin/users/admin
-Authorization: Bearer <superAdmin_token>
-Content-Type: application/json
-
-{
-  "firstName": "محمد",
-  "lastName": "أحمد",
-  "companyName": "متجر الأمانة",
-  "companyAddress": "شارع الجامعة، القاهرة، مصر",
-  "phone": "01234567890",
-  "email": "admin@example.com",
-  "password": "password123"
-}
-```
-
-#### تحديث أدمن
-```http
-PUT /api/superAdmin/users/admin/:id
-Authorization: Bearer <superAdmin_token>
-Content-Type: application/json
-
-{
-  "firstName": "محمد محدث",
-  "companyName": "متجر الأمانة المحدث"
-}
-```
-
-#### حذف أدمن
-```http
-DELETE /api/superAdmin/users/admin/:id
-Authorization: Bearer <superAdmin_token>
-```
-
-### 8.3 إدارة الاشتراكات
-
-#### جلب جميع الاشتراكات
-```http
-GET /api/superAdmin/subscriptions
-Authorization: Bearer <superAdmin_token>
-```
-
-#### الموافقة على اشتراك أو رفضه
-```http
-POST /api/superAdmin/subscriptions/:subscriptionId/approve
-Authorization: Bearer <superAdmin_token>
-Content-Type: application/json
-
-{
-  "status": "approved", // أو "rejected"
-  "rejectionReason": "سبب الرفض" // مطلوب في حالة الرفض
-}
-```
-
-### 8.4 إرسال الإشعارات
-
-#### إرسال إشعارات للمستخدمين
-```http
-POST /api/superAdmin/notifications/send
-Authorization: Bearer <superAdmin_token>
-Content-Type: application/json
-
-{
-  "recipients": {
-    "type": "all", // أو "specific" أو "verified" أو "unverified"
-    "userIds": ["userId1", "userId2"] // مطلوب فقط إذا كان type = "specific"
-  },
-  "subject": "موضوع الإشعار",
-  "message": "نص الرسالة",
-  "type": "email"
-}
-```
-
-**أنواع المستقبلين:**
-- `all`: جميع الأدمن
-- `specific`: أدمن محددين بالـ ID
-- `verified`: الأدمن المفعلين فقط
-- `unverified`: الأدمن غير المفعلين
-
-### 8.5 عرض المنتجات والفواتير
-
-#### عرض جميع المنتجات عبر جميع الأدمنز
-```http
-GET /api/superAdmin/products?adminId=123&categoryId=456&search=حليب&minPrice=10&maxPrice=100&page=1&limit=20
-Authorization: Bearer <superAdmin_token>
-```
-
-**المعايير المتاحة:**
-- `adminId`: فلترة حسب أدمن محدد
-- `categoryId`: فلترة حسب فئة محددة
-- `search`: البحث في اسم المنتج أو SKU أو الوصف
-- `minPrice`, `maxPrice`: نطاق السعر
-- `minQuantity`, `maxQuantity`: نطاق الكمية
-- `page`, `limit`: الصفحات
-- `sortBy`, `sortOrder`: الترتيب
-
-#### عرض جميع الفواتير عبر جميع الأدمنز
-```http
-GET /api/superAdmin/invoices?adminId=123&customerName=أحمد&minAmount=100&maxAmount=1000&startDate=2024-01-01&endDate=2024-12-31&page=1&limit=20
-Authorization: Bearer <superAdmin_token>
-```
-
-**المعايير المتاحة:**
-- `adminId`: فلترة حسب أدمن محدد
-- `customerName`: البحث في اسم العميل
-- `minAmount`, `maxAmount`: نطاق المبلغ
-- `startDate`, `endDate`: نطاق التاريخ
-- `page`, `limit`: الصفحات
-
-#### عرض المنتجات الخاصة بأدمن محدد
-```http
-GET /api/superAdmin/admins/:id/products?categoryId=456&search=حليب&minPrice=10&maxPrice=100&page=1&limit=20
-Authorization: Bearer <superAdmin_token>
-```
-
-#### عرض الفواتير الخاصة بأدمن محدد
-```http
-GET /api/superAdmin/admins/:id/invoices?customerName=أحمد&minAmount=100&maxAmount=1000&startDate=2024-01-01&endDate=2024-12-31&page=1&limit=20
-Authorization: Bearer <superAdmin_token>
-```
-
-### 8.6 التقارير العامة
-```http
-GET /api/superAdmin/reports/global
-Authorization: Bearer <superAdmin_token>
-```
-
-**Response Example:**
+**Response:**
 ```json
 {
-  "totalAdmins": 50,
-  "totalRevenue": 250000.00,
-  "totalProducts": 5000,
-  "activeSubscriptions": 45,
-  "pendingSubscriptions": 5,
-  "monthlyGrowth": "15%",
-  "topPerformingAdmins": [...],
-  "revenueByMonth": [...]
-}
-```
-
----
-
-## 🗄️ قاعدة البيانات - النماذج
-
-### User Schema
-```javascript
-{
-  firstName: String,       // الاسم الأول (مطلوب)
-  lastName: String,        // الاسم الأخير (مطلوب)
-  companyName: String,     // اسم الشركة (مطلوب)
-  companyAddress: String,  // عنوان الشركة (مطلوب)
-  email: String,           // البريد الإلكتروني (unique, مطلوب)
-  password: String,        // كلمة المرور المشفرة (مطلوب)
-  role: String,            // admin | superAdmin (مطلوب)
-  phone: String,           // رقم الهاتف (مطلوب)
-  isVerified: Boolean,     // حالة التفعيل (افتراضي: false)
-  otp: String,            // رمز التحقق
-  createdAt: Date         // تاريخ الإنشاء
-}
-```
-
-### Product Schema
-```javascript
-{
-  adminId: ObjectId,       // معرف الأدمن (ref: User, مطلوب)
-  name: String,            // اسم المنتج (مطلوب)
-  sku: String,             // رمز المنتج (unique per admin, مطلوب)
-  originalPrice: Number,   // السعر الأصلي (مطلوب)
-  sellingPrice: Number,    // سعر البيع (مطلوب)
-  quantity: Number,        // الكمية (مطلوب)
-  categoryId: ObjectId,    // معرف الفئة (ref: Category, مطلوب)
-  description: String,     // الوصف
-  image: String,           // رابط الصورة
-  createdAt: Date,         // تاريخ الإنشاء
-  updatedAt: Date          // تاريخ التحديث
-}
-```
-
-### Invoice Schema
-```javascript
-{
-  adminId: ObjectId,       // معرف الأدمن (ref: User)
-  invoiceNumber: String,   // رقم الفاتورة (unique per admin)
-  customer: {
-    name: String,          // اسم العميل
-    phone: String          // هاتف العميل
+  "message": "مرحباً بك في نظام إدارة المتاجر - Kasher Project",
+  "status": "API is running successfully",
+  "endpoints": {
+    "health": "/api/health",
+    "auth": "/api/auth",
+    "admin": "/api/admin",
+    "superAdmin": "/api/superAdmin",
+    "subscriptions": "/api/subscriptions",
+    "inventory": "/api/inventory"
   },
-  items: [{
-    productId: ObjectId,   // معرف المنتج
-    sku: String,           // رمز المنتج
-    name: String,          // اسم المنتج
-    quantity: Number,      // الكمية
-    price: Number,         // السعر
-    total: Number          // الإجمالي
-  }],
-  totalAmount: Number,     // المبلغ الإجمالي
-  createdAt: Date
-}
-```
-
-### Category Schema
-```javascript
-{
-  adminId: ObjectId,       // معرف الأدمن (ref: User)
-  name: String,            // اسم الفئة
-  createdAt: Date
-}
-```
-
-### Subscription Schema
-```javascript
-{
-  adminId: ObjectId,           // معرف الأدمن (ref: User)
-  plan: String,                // trial | monthly | yearly | custom
-  price: Number,               // السعر مع validation حسب الخطة
-  startDate: Date,             // تاريخ البداية
-  endDate: Date,               // تاريخ النهاية (30 يوم للتجريبي)
-  status: String,              // pending | approved | rejected
-  paymentConfirmed: Boolean,   // تأكيد الدفع
-  receiptImage: String,        // صورة الإيصال (Cloudinary URL)
-  paidAmountText: String,      // المبلغ المدفوع نصياً
-  duration: String,            // trial | month | year | custom
-  customNotes: String,         // ملاحظات مخصصة
-  receiptFileName: String,     // اسم ملف الإيصال
-  createdAt: Date
+  "timestamp": "2024-01-01T00:00:00.000Z",
+  "server": "Node.js + Express",
+  "database": "MongoDB"
 }
 ```
 
 ---
 
-## 🚀 إعداد وتشغيل المشروع
+## 🔒 Security & Authentication
 
-### متطلبات النظام
-- Node.js >= 16.0.0
-- MongoDB >= 5.0.0
-- npm أو yarn
+### Middleware المستخدم
+- **CORS**: للسماح بالطلبات من مختلف الدومينات
+- **Helmet**: لحماية الـ headers
+- **XSS Clean**: لمنع XSS attacks
+- **Rate Limiting**: للحد من عدد الطلبات (100 طلب/15 دقيقة)
+- **JWT Authentication**: للمصادقة
+- **Role-based Authorization**: للتحكم في الصلاحيات
+- **Subscription Check**: للتحقق من صحة الاشتراك
 
-### متغيرات البيئة (.env)
+### أنواع التوكنات
+- **Access Token**: صالح لمدة ساعة واحدة
+- **Refresh Token**: صالح لمدة 7 أيام
+
+### استثناءات Rate Limiting
+- مسارات المنتجات `/api/admin/products`
+- مسارات السوبر أدمن `/api/superAdmin`
+
+---
+
+## 📝 أكواد الاستجابة
+
+### Success Codes
+- **200**: نجح الطلب
+- **201**: تم الإنشاء بنجاح
+
+### Error Codes  
+- **400**: خطأ في البيانات المرسلة
+- **401**: غير مصرح (Authentication required)
+- **403**: ممنوع (Insufficient permissions)
+- **404**: غير موجود
+- **500**: خطأ في الخادم
+
+---
+
+## 📋 ملاحظات مهمة
+
+### للأدمن (Admin):
+- يجب التحقق من البريد الإلكتروني قبل الوصول للنظام
+- يحتاج اشتراك نشط للوصول لمعظم الوظائف
+- لا يمكن الوصول لمسارات السوبر أدمن
+
+### للسوبر أدمن (SuperAdmin):
+- لا يحتاج للتحقق من الاشتراك
+- يمكنه إنشاء وإدارة الأدمنز
+- يمكنه عرض جميع البيانات عبر النظام
+- يمكنه الموافقة/رفض الاشتراكات
+
+### Upload Files:
+- الحد الأقصى لحجم الملف: 5MB
+- أنواع الملفات المسموحة: صور فقط
+- يتم استخدام Cloudinary لتخزين الصور
+- Memory storage للتوافق مع Vercel
+
+### Database:
+- MongoDB مع Mongoose ODM
+- Multi-tenant architecture
+- Unique indexes للـ SKU per admin
+- Unique indexes للـ invoice numbers per admin
+
+---
+
+## 🚀 Development & Deployment
+
+### Scripts المتاحة
+```bash
+npm start          # تشغيل الخادم
+npm run dev        # تشغيل في وضع التطوير مع nodemon
+npm run build      # بناء المشروع
+npm run vercel-build # بناء للنشر على Vercel
+```
+
+### Environment Variables
 ```env
-# Database
-MONGO_URI=mongodb+srv://your_connection_string
-
-# JWT Secrets
-JWT_SECRET=your_super_secret_jwt_key_here
-REFRESH_TOKEN_SECRET=your_super_secret_refresh_key_here
-ACCESS_TOKEN_SECRET=your_access_token_secret
-
-# Email Configuration
-EMAILTEST=your_email@gmail.com
-APIKE=your_app_password
-
-# Cloudinary (for file uploads)
-CLOUDINARY_CLOUD_NAME=your_cloud_name
+PORT=3000
+MONGO_URI=mongodb://...
+JWT_SECRET=your_jwt_secret
+REFRESH_TOKEN_SECRET=your_refresh_secret
+CLOUDINARY_CLOUD_NAME=your_cloudinary_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
-
-# Server
-PORT=3000
-NODE_ENV=development
+NODE_ENV=production
 ```
 
-### تثبيت وتشغيل
-```bash
-# تثبيت الحزم
-npm install
-
-# تشغيل السيرفر للتطوير
-npm run dev
-
-# تشغيل السيرفر للإنتاج
-npm start
-```
+### Dependencies
+- **Backend**: Express.js, Mongoose, JWT
+- **Security**: Helmet, XSS-Clean, Rate Limiting  
+- **File Upload**: Multer, Cloudinary
+- **Email**: Nodemailer
+- **Validation**: Express Validator
+- **Logging**: Winston, Morgan
 
 ---
 
-## 📧 نظام الإشعارات
+## 📞 دعم وتطوير
 
-### إشعارات البريد الإلكتروني
-- **تفعيل الحساب**: OTP مكون من 6 أرقام
-- **إعادة تعيين كلمة المرور**: OTP آمن
-- **حالة الاشتراك**: إشعار بالموافقة أو الرفض
-
----
-
-## 🔧 Frontend Integration Examples
-
-### Axios Setup
-```javascript
-import axios from 'axios';
-
-const API = axios.create({
-  baseURL: 'http://localhost:3000/api',
-  timeout: 10000,
-});
-
-// إضافة Token تلقائياً
-API.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-// معالجة انتهاء صلاحية Token
-API.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    if (error.response?.status === 401) {
-      const refreshToken = localStorage.getItem('refreshToken');
-      if (refreshToken) {
-        try {
-          const response = await axios.post('/auth/refresh-token', {
-            refreshToken
-          });
-          localStorage.setItem('token', response.data.token);
-          return API.request(error.config);
-        } catch (refreshError) {
-          localStorage.clear();
-          window.location.href = '/login';
-        }
-      }
-    }
-    return Promise.reject(error);
-  }
-);
-```
-
-### مثال على Login
-```javascript
-const login = async (email, password) => {
-  try {
-    const response = await API.post('/auth/login', { email, password });
-    const { token, refreshToken, user } = response.data;
-    
-    localStorage.setItem('token', token);
-    localStorage.setItem('refreshToken', refreshToken);
-    localStorage.setItem('user', JSON.stringify(user));
-    
-    if (user.role === 'superAdmin') {
-      router.push('/super-admin');
-    } else {
-      router.push('/admin');
-    }
-  } catch (error) {
-    console.error('Login failed:', error.response.data.message);
-  }
-};
-```
+هذا النظام جاهز للإنتاج ومتوافق مع:
+- ✅ Vercel Deployment
+- ✅ MongoDB Atlas
+- ✅ Cloudinary CDN
+- ✅ Multi-tenant Architecture
+- ✅ JWT Authentication
+- ✅ Role-based Access Control
+- ✅ File Upload Management
+- ✅ Email Notifications
+- ✅ Comprehensive API Documentation
 
 ---
 
-## ⚠️ ملاحظات مهمة
+**📋 Total Endpoints**: 50+ endpoint موزعة على 6 modules رئيسية
 
-### الأمان
-- لا تنس تغيير JWT secrets في الإنتاج
-- استخدم HTTPS في الإنتاج
-- قم بتحديث dependency packages بانتظام
+**🔐 Security Level**: Enterprise Grade
 
+**⚡ Performance**: Optimized for Production
 
-
-## 📞 الدعم والتواصل
-
-- **Version**: 1.0.0
-- **Status**: ✅ جميع Endpoints تعمل بشكل صحيح بعد الإصلاح
-
----
-
-*تم تحليل النظام ومراجعة جميع الـ endpoints - النظام جاهز للاستخدام! 🚀*
+**🏗️ Architecture**: Scalable Multi-tenant System
