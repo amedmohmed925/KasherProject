@@ -148,27 +148,42 @@ console.log('📡 Connecting to MongoDB...');
 
 mongoose.connect(process.env.MONGO_URI, { 
   useNewUrlParser: true, 
-  useUnifiedTopology: true 
+  useUnifiedTopology: true,
+  serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+  socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
 })
   .then(() => {
     console.log('✅ MongoDB connected successfully');
-    app.listen(PORT, () => {
-      console.log(`🎉 Server running on port ${PORT}`);
-      console.log(`🌐 API Base URL: http://localhost:${PORT}`);
-      console.log(`❤️  Health Check: http://localhost:${PORT}/api/health`);
-      console.log('📋 Available endpoints:');
-      console.log('   - Root: /');
-      console.log('   - Health: /api/health');
-      console.log('   - Auth: /api/auth/*');
-      console.log('   - Admin: /api/admin/*');
-      console.log('   - Super Admin: /api/superAdmin/*');
-      console.log('   - Subscriptions: /api/subscriptions/*');
-      console.log('   - Inventory: /api/inventory/*');
-      console.log('💡 Ready to accept requests!');
-    });
+    console.log('🎉 Server ready for requests');
+    console.log(`🌐 Health Check: /api/health`);
+    console.log('💡 Ready to accept requests!');
+    
+    // Only start server in non-serverless environments
+    if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+      app.listen(PORT, () => {
+        console.log(`🎉 Server running on port ${PORT}`);
+        console.log(`🌐 API Base URL: http://localhost:${PORT}`);
+        console.log(`❤️  Health Check: http://localhost:${PORT}/api/health`);
+        console.log('📋 Available endpoints:');
+        console.log('   - Root: /');
+        console.log('   - Health: /api/health');
+        console.log('   - Auth: /api/auth/*');
+        console.log('   - Admin: /api/admin/*');
+        console.log('   - Super Admin: /api/superAdmin/*');
+        console.log('   - Subscriptions: /api/subscriptions/*');
+        console.log('   - Inventory: /api/inventory/*');
+        console.log('💡 Ready to accept requests!');
+      });
+    }
   })
   .catch(err => {
-    console.error('❌ MongoDB connection error:', err);
-    console.error('🔍 Please check your MONGO_URI in .env file');
-    process.exit(1);
+    console.error('❌ MongoDB connection error:', err.message);
+    console.error('🔍 Please check your MONGO_URI in Vercel environment variables');
+    // Don't exit in serverless environment, let it continue
+    if (process.env.NODE_ENV !== 'production') {
+      process.exit(1);
+    }
   });
+
+// Export for Vercel
+module.exports = app;
