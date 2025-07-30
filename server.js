@@ -79,6 +79,35 @@ app.use('/api/subscriptions', subscriptionsRoutes);
 app.use('/api/inventory', inventoryRoutes);
 
 
+app.get('/', (req, res) => {
+  res.json({
+    status: 'success',
+    message: 'API is working perfectly! 🚀',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development',
+    version: '1.0.0'
+  });
+});
+
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({
+    message: 'مرحباً بك في نظام إدارة المتاجر - Kasher Project',
+    status: 'API is running successfully',
+    endpoints: {
+      health: '/api/health',
+      auth: '/api/auth',
+      admin: '/api/admin', 
+      superAdmin: '/api/superAdmin',
+      subscriptions: '/api/subscriptions',
+      inventory: '/api/inventory'
+    },
+    timestamp: new Date().toISOString()
+  });
+});
+
+
 // Error handler
 
 app.use((err, req, res, next) => {
