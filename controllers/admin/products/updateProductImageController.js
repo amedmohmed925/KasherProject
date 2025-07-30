@@ -16,8 +16,10 @@ module.exports = async (req, res) => {
     }
 
     try {
-      // رفع الصورة الجديدة على Cloudinary
-      const result = await cloudinary.uploader.upload(req.file.path, {
+      // رفع الصورة الجديدة على Cloudinary (memory storage compatibility)
+      const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+      
+      const result = await cloudinary.uploader.upload(base64Image, {
         folder: 'kasher_products',
         resource_type: 'image',
         transformation: [

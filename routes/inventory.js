@@ -13,10 +13,10 @@ const inventoryStatsController = require('../controllers/admin/inventory/invento
 const inventoryReportController = require('../controllers/admin/inventory/inventoryReportController');
 const lowStockController = require('../controllers/admin/inventory/lowStockController');
 
-// Multer configuration for file uploads
+// Multer configuration for file uploads (memory storage for Vercel)
 const multer = require('multer');
 const upload = multer({ 
-  dest: 'uploads/',
+  storage: multer.memoryStorage(), // Use memory storage instead of disk
   limits: {
     fileSize: 5 * 1024 * 1024 // 5MB limit
   },

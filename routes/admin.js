@@ -23,10 +23,10 @@ const getProfileController = require('../controllers/admin/getProfileController'
 const updateProfileController = require('../controllers/admin/updateProfileController');
 const getAdvancedAnalyticsController = require('../controllers/admin/getAdvancedAnalyticsController');
 
-// Multer configuration for file uploads
+// Multer configuration for file uploads (memory storage for Vercel)
 const multer = require('multer');
 const upload = multer({ 
-  dest: 'uploads/',
+  storage: multer.memoryStorage(), // Use memory storage instead of disk
   limits: {
     fileSize: 5 * 1024 * 1024 // 5MB limit
   },

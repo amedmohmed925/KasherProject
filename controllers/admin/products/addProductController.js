@@ -24,7 +24,10 @@ module.exports = async (req, res) => {
     // رفع الصورة على Cloudinary إذا تم إرسال صورة
     if (req.file) {
       try {
-        const result = await cloudinary.uploader.upload(req.file.path, {
+        // Convert buffer to base64 for Cloudinary upload (memory storage compatibility)
+        const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+        
+        const result = await cloudinary.uploader.upload(base64Image, {
           folder: 'kasher_products',
           resource_type: 'image',
           transformation: [

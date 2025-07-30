@@ -31,7 +31,10 @@ module.exports = async (req, res) => {
     let receiptImage = '';
     let receiptFileName = '';
     if (file && plan !== 'trial') {
-      const uploadResult = await cloudinary.uploader.upload(file.path, {
+      // Convert buffer to base64 for Cloudinary upload (memory storage compatibility)
+      const base64Image = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+      
+      const uploadResult = await cloudinary.uploader.upload(base64Image, {
         folder: 'receipts',
         resource_type: 'image',
       });

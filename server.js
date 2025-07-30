@@ -78,6 +78,7 @@ app.use('/api/admin/invoices', invoicesRoutes);
 app.use('/api/subscriptions', subscriptionsRoutes);
 app.use('/api/inventory', inventoryRoutes);
 
+
 // Health Check Endpoint
 app.get('/api/health', (req, res) => {
   res.json({

@@ -17,6 +17,18 @@
 - **Solution**: Added optimized connection settings for Vercel
 - **Code Changes**: Added `serverSelectionTimeoutMS: 5000` and `socketTimeoutMS: 45000`
 
+### 4. **Multer File System Error** ⭐ **NEW FIX**
+- **Problem**: Multer trying to create `uploads/` directory in read-only Vercel environment
+- **Solution**: Changed all Multer configurations to use memory storage
+- **Files Updated**: 
+  - `routes/admin.js`
+  - `routes/inventory.js` 
+  - `routes/subscriptions.js`
+- **Controllers Updated**:
+  - `addProductController.js`
+  - `updateProductImageController.js`
+  - `uploadSubscriptionReceiptController.js`
+
 ## 📋 Deployment Steps
 
 ### If you have Vercel CLI installed:
@@ -55,6 +67,7 @@ After deployment, test these endpoints:
 1. **Health Check**: `https://your-domain.vercel.app/api/health`
 2. **Root**: `https://your-domain.vercel.app/`
 3. **Auth**: `https://your-domain.vercel.app/api/auth/login`
+4. **Product Upload**: Test image upload endpoints
 
 ## 📝 Key Changes Made
 
@@ -67,6 +80,25 @@ if (process.env.NODE_ENV !== 'production' && process.env.VERCEL !== '1') {
     new winston.transports.File({ filename: 'logs/combined.log' })
   );
 }
+```
+
+### All Route Files (admin.js, inventory.js, subscriptions.js)
+```javascript
+// Changed from disk storage to memory storage
+const upload = multer({ 
+  storage: multer.memoryStorage(), // ✅ Memory storage for Vercel
+  limits: { fileSize: 5 * 1024 * 1024 }
+});
+```
+
+### All Upload Controllers
+```javascript
+// Changed from file.path to buffer approach
+const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+const result = await cloudinary.uploader.upload(base64Image, {
+  folder: 'kasher_products',
+  resource_type: 'image'
+});
 ```
 
 ### `server.js`
@@ -88,6 +120,8 @@ After these fixes, your API should:
 - ✅ Deploy successfully to Vercel
 - ✅ Connect to MongoDB without timeout issues
 - ✅ Log only to console (no file system errors)
+- ✅ Handle file uploads using memory storage
+- ✅ Upload images directly to Cloudinary from memory
 - ✅ Handle requests properly in serverless environment
 - ✅ Return proper responses from all endpoints
 
@@ -99,6 +133,7 @@ If you still see errors:
 2. **Verify Environment Variables**: Ensure all required env vars are set correctly
 3. **Test Health Endpoint**: Should return database connection status
 4. **Check MongoDB Atlas**: Ensure your cluster allows connections from anywhere (0.0.0.0/0)
+5. **Test Image Upload**: Verify Cloudinary credentials are working
 
 ## 📞 Next Steps
 
@@ -106,6 +141,7 @@ If you still see errors:
 2. Test the `/api/health` endpoint 
 3. Verify all environment variables are set
 4. Test your main API endpoints
-5. Monitor Vercel function logs for any remaining issues
+5. Test image upload functionality
+6. Monitor Vercel function logs for any remaining issues
 
-Your API should now work perfectly on Vercel! 🎉
+Your API should now work perfectly on Vercel with full file upload support! 🎉

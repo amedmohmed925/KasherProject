@@ -7,7 +7,7 @@ const approveSubscriptionController = require('../controllers/superAdmin/subscri
 const listSubscriptionsController = require('../controllers/superAdmin/subscriptions/listSubscriptionsController');
 const uploadSubscriptionReceiptController = require('../controllers/admin/uploadSubscriptionReceiptController');
 const multer = require('multer');
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({ storage: multer.memoryStorage() }); // Use memory storage for Vercel
 
 const router = express.Router();
 
