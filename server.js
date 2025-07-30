@@ -78,15 +78,16 @@ app.use('/api/admin/invoices', invoicesRoutes);
 app.use('/api/subscriptions', subscriptionsRoutes);
 app.use('/api/inventory', inventoryRoutes);
 
-
-app.get('/', (req, res) => {
+// Health Check Endpoint
+app.get('/api/health', (req, res) => {
   res.json({
     status: 'success',
     message: 'API is working perfectly! 🚀',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     environment: process.env.NODE_ENV || 'development',
-    version: '1.0.0'
+    version: '1.0.0',
+    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
   });
 });
 
@@ -103,23 +104,71 @@ app.get('/', (req, res) => {
       subscriptions: '/api/subscriptions',
       inventory: '/api/inventory'
     },
+    timestamp: new Date().toISOString(),
+    server: 'Node.js + Express',
+    database: 'MongoDB'
+  });
+});
+
+// 404 Handler - يجب أن يكون قبل Error handler
+app.use('*', (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: 'Endpoint not found',
+    requestedPath: req.originalUrl,
+    method: req.method,
+    availableEndpoints: {
+      root: '/',
+      health: '/api/health',
+      auth: '/api/auth/*',
+      admin: '/api/admin/*',
+      superAdmin: '/api/superAdmin/*',
+      subscriptions: '/api/subscriptions/*',
+      inventory: '/api/inventory/*'
+    },
     timestamp: new Date().toISOString()
   });
 });
 
-
 // Error handler
-
 app.use((err, req, res, next) => {
-  res.status(500).json({ message: err.message || 'Internal Server Error' });
+  console.error('Error:', err);
+  res.status(500).json({ 
+    success: false,
+    message: err.message || 'Internal Server Error',
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Connect to MongoDB and start server
 const PORT = process.env.PORT || 3000;
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+
+console.log('🚀 Starting Kasher Project API...');
+console.log('📡 Connecting to MongoDB...');
+
+mongoose.connect(process.env.MONGO_URI, { 
+  useNewUrlParser: true, 
+  useUnifiedTopology: true 
+})
   .then(() => {
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    console.log('✅ MongoDB connected successfully');
+    app.listen(PORT, () => {
+      console.log(`🎉 Server running on port ${PORT}`);
+      console.log(`🌐 API Base URL: http://localhost:${PORT}`);
+      console.log(`❤️  Health Check: http://localhost:${PORT}/api/health`);
+      console.log('📋 Available endpoints:');
+      console.log('   - Root: /');
+      console.log('   - Health: /api/health');
+      console.log('   - Auth: /api/auth/*');
+      console.log('   - Admin: /api/admin/*');
+      console.log('   - Super Admin: /api/superAdmin/*');
+      console.log('   - Subscriptions: /api/subscriptions/*');
+      console.log('   - Inventory: /api/inventory/*');
+      console.log('💡 Ready to accept requests!');
+    });
   })
   .catch(err => {
-    console.error('MongoDB connection error:', err);
+    console.error('❌ MongoDB connection error:', err);
+    console.error('🔍 Please check your MONGO_URI in .env file');
+    process.exit(1);
   });
