@@ -235,3 +235,10 @@
 {"level":"info","message":{"body":{"name":"Food 2"},"method":"POST","url":"/api/admin/categories","user":null},"timestamp":"2025-07-25T18:11:55.831Z"}
 {"level":"info","message":{"body":{"name":"Food 2"},"method":"POST","url":"/api/admin/categories","user":null},"timestamp":"2025-07-25T18:14:09.205Z"}
 {"level":"info","message":{"body":{},"method":"GET","url":"/api/admin/admin/687bc08b15cebd664152625c","user":null},"timestamp":"2025-07-25T18:20:25.126Z"}
+{"level":"info","message":{"body":{},"method":"GET","url":"/api-docs","user":null},"timestamp":"2025-07-30T13:50:48.007Z"}
+{"level":"info","message":{"body":{},"method":"GET","url":"/api-docs/","user":null},"timestamp":"2025-07-30T13:50:48.087Z"}
+{"level":"info","message":{"body":{},"method":"GET","url":"/api-docs/swagger-ui.css","user":null},"timestamp":"2025-07-30T13:50:48.264Z"}
+{"level":"info","message":{"body":{},"method":"GET","url":"/api-docs/swagger-ui-standalone-preset.js","user":null},"timestamp":"2025-07-30T13:50:48.276Z"}
+{"level":"info","message":{"body":{},"method":"GET","url":"/api-docs/swagger-ui-bundle.js","user":null},"timestamp":"2025-07-30T13:50:48.284Z"}
+{"level":"info","message":{"body":{},"method":"GET","url":"/api-docs/swagger-ui-init.js","user":null},"timestamp":"2025-07-30T13:50:48.287Z"}
+{"level":"info","message":{"body":{},"method":"GET","url":"/favicon.ico","user":null},"timestamp":"2025-07-30T13:50:49.309Z"}
