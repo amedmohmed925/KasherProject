@@ -14,14 +14,19 @@ const router = express.Router();
 // Middleware مشترك للفواتير
 const adminMiddleware = [authenticate, authorize('admin'), checkSubscription];
 
-// Add a new invoice
+// Add a new invoice (aligned with controller expecting items[] & customer object)
 router.post('/add-invoices',
   ...adminMiddleware,
   [
-    body('products').isArray().withMessage('Products must be an array'),
-    body('products.*.sku').notEmpty().withMessage('SKU is required'),
-    body('products.*.quantity').isNumeric().withMessage('Quantity must be a number'),
-    body('customerName').optional().isString()
+    body('items').isArray({ min: 1 }).withMessage('items must be a non-empty array'),
+    body('items.*.productId').notEmpty().withMessage('productId is required for each item'),
+    body('items.*.quantity').isInt({ gt: 0 }).withMessage('quantity must be a positive integer'),
+    body('customer').isObject().withMessage('customer object is required'),
+    body('customer.name').notEmpty().withMessage('customer name is required'),
+    body('discount').optional().isObject(),
+    body('discount.type').optional().isIn(['percentage', 'fixed']).withMessage('discount.type must be percentage or fixed'),
+    body('discount.value').optional().isFloat({ min: 0 }).withMessage('discount.value must be >= 0'),
+    body('paymentMethod').optional().isIn(['cash','card','bank_transfer','other']).withMessage('Invalid payment method')
   ],
   validate,
   addInvoiceController

@@ -1,4 +1,4 @@
-const { validationResult } = require('express-validator');
+const { validationResult, body, param, query } = require('express-validator');
 
 const validate = (req, res, next) => {
   const errors = validationResult(req);
@@ -7,5 +7,10 @@ const validate = (req, res, next) => {
   }
   next();
 };
+
+// Export validation methods and the validate middleware
+validate.body = body;
+validate.param = param;
+validate.query = query;
 
 module.exports = validate;

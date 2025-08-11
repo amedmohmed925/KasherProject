@@ -9,7 +9,6 @@ const productSchema = new mongoose.Schema({
   quantity: { type: Number, required: true },
   categoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true },
   description: { type: String },
-  image: { type: String },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });

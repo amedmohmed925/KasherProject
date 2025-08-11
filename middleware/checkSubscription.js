@@ -14,6 +14,22 @@ module.exports = async (req, res, next) => {
       .sort({ endDate: -1 });
       
     if (!subscription) {
+      // Allow implicit trial based on user account creation date (30 days)
+      const userCreatedAt = req.user.createdAt ? new Date(req.user.createdAt) : null;
+      if (userCreatedAt) {
+        const nowDate = new Date();
+        const diffDays = Math.floor((nowDate - userCreatedAt) / (1000 * 60 * 60 * 24));
+        if (diffDays < 30) {
+          // Treat as active trial without stored subscription
+          req.subscription = {
+            plan: 'trial',
+            status: 'approved',
+            startDate: userCreatedAt,
+            endDate: new Date(userCreatedAt.getTime() + 30 * 24 * 60 * 60 * 1000)
+          };
+          return next();
+        }
+      }
       return res.status(403).json({ message: 'No active subscription. Please subscribe first.' });
     }
     
@@ -31,7 +47,8 @@ module.exports = async (req, res, next) => {
       return res.status(403).json({ message: 'Your subscription is not approved yet.' });
     }
     
-    next();
+  req.subscription = subscription;
+  next();
   } catch (error) {
     console.error('Subscription check error:', error);
     res.status(500).json({ message: 'Subscription check error', error: error.message });

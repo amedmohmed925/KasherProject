@@ -15,6 +15,7 @@ const authRoutes = require('./routes/auth');
 const invoicesRoutes = require('./routes/invoices');
 const subscriptionsRoutes = require('./routes/subscriptions');
 const inventoryRoutes = require('./routes/inventory');
+const customersRoutes = require('./routes/customers');
 
 // Swagger Configuration
 const { swaggerUi, specs } = require('./swagger');
@@ -80,6 +81,7 @@ app.use('/api/superAdmin', superAdminRoutes);
 app.use('/api/admin/invoices', invoicesRoutes);
 app.use('/api/subscriptions', subscriptionsRoutes);
 app.use('/api/inventory', inventoryRoutes);
+app.use('/api/admin/customers', customersRoutes);
 
 // Swagger API Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, {

@@ -7,7 +7,6 @@ const searchProductsController = require('../controllers/admin/products/searchPr
 const getProductsController = require('../controllers/admin/products/getProductsController');
 const addProductController = require('../controllers/admin/products/addProductController');
 const updateProductController = require('../controllers/admin/products/updateProductController');
-const updateProductImageController = require('../controllers/admin/products/updateProductImageController');
 const deleteProductController = require('../controllers/admin/products/deleteProductController');
 const inventoryStatsController = require('../controllers/admin/inventory/inventoryStatsController');
 const inventoryReportController = require('../controllers/admin/inventory/inventoryReportController');
@@ -73,12 +72,6 @@ router.put('/products/:id',
   updateProductController
 );
 
-// Update product image only
-router.put('/products/:id/image',
-  ...adminMiddleware,
-  upload.single('image'),
-  updateProductImageController
-);
 
 // Delete product
 router.delete('/products/:id',

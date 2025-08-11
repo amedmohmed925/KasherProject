@@ -1,4 +1,5 @@
 const User = require('../../models/User');
+const Subscription = require('../../models/Subscription');
 const bcrypt = require('bcryptjs');
 const mailSender = require('../../utils/mailSender');
 
@@ -41,6 +42,28 @@ module.exports = async (req, res) => {
     });
     await user.save();
 
+    // Create automatic 30-day trial subscription if none exists
+    try {
+      const existingSub = await Subscription.findOne({ adminId: user._id }).sort({ endDate: -1 });
+      if (!existingSub) {
+        const startDate = new Date();
+        const endDate = new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+        await Subscription.create({
+          adminId: user._id,
+            plan: 'trial',
+            price: 0,
+            startDate,
+            endDate,
+            status: 'approved',
+            paymentConfirmed: true,
+            duration: 'trial'
+        });
+      }
+    } catch (subErr) {
+      console.error('Failed to create trial subscription automatically:', subErr.message);
+      // Don't fail registration because of subscription creation issue
+    }
+
     console.log('Sending verification email...');
     await mailSender(
       email,
@@ -48,7 +71,7 @@ module.exports = async (req, res) => {
       `<h1>مرحبًا بك!</h1><p>رمز التحقق الخاص بك هو: <b>${otp}</b></p>`
     );
 
-    res.status(201).json({ message: "تم التسجيل بنجاح. يرجى التحقق من بريدك الإلكتروني." });
+  res.status(201).json({ message: "تم التسجيل بنجاح. تم تفعيل الفترة التجريبية المجانية لمدة 30 يوم. يرجى التحقق من بريدك الإلكتروني." });
   } catch (error) {
     console.error("Error in register:", error);
     res.status(500).json({ message: "Server error", error: error.message });

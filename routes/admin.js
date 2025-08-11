@@ -5,7 +5,6 @@ const addProduct = require('../controllers/admin/products/addProductController')
 const getProducts = require('../controllers/admin/products/getProductsController');
 const deleteProduct = require('../controllers/admin/products/deleteProductController');
 const updateProduct = require('../controllers/admin/products/updateProductController');
-const updateProductImage = require('../controllers/admin/products/updateProductImageController');
 const generateReport = require('../controllers/admin/generateReportController');
 const listInvoices = require('../controllers/admin/listInvoicesController');
 const { body } = require('express-validator');
@@ -17,6 +16,11 @@ const updateCategoryController = require('../controllers/admin/categories/update
 const getAllInvoicesController = require('../controllers/admin/invoices/getAllInvoicesController');
 const getAdminStatsController = require('../controllers/admin/getAdminStatsController');
 const analyticsController = require('../controllers/admin/dashboard/analyticsController');
+const enhancedAnalyticsController = require('../controllers/admin/dashboard/enhancedAnalyticsController');
+const getAnalyticsByPeriod = require('../controllers/admin/analytics/getAnalyticsByPeriodController');
+const compareAnalytics = require('../controllers/admin/analytics/compareAnalyticsController');
+const getDashboardSummary = require('../controllers/admin/analytics/getDashboardSummaryController');
+const getAdminDashboardAnalytics = require('../controllers/admin/analytics/getAdminDashboardAnalyticsController');
 const searchProductsController = require('../controllers/admin/products/searchProductsController');
 const getAdminByIdController = require('../controllers/admin/getAdminByIdController');
 const getProfileController = require('../controllers/admin/getProfileController');
@@ -279,12 +283,6 @@ router.put('/products/:id',
 );
 
 // Update product image
-router.put('/products/:id/image',
-  ...adminMiddleware,
-  upload.single('image'),
-  updateProductImage
-);
-
 // Search products
 router.get('/products/search', ...adminMiddleware, searchProductsController);
 // Delete product
@@ -297,8 +295,23 @@ router.get('/reports', ...adminMiddleware, generateReport);
 // Dashboard Analytics
 router.get('/dashboard/analytics', ...adminMiddleware, analyticsController);
 
+// Enhanced Analytics with expenses, customers, and advanced metrics
+// router.get('/analytics/enhanced', ...adminMiddleware, enhancedAnalyticsController);
+
+// Analytics by time periods (today, week, month, year, custom)
+router.get('/analytics/periods', ...adminMiddleware, getAnalyticsByPeriod);
+
+// Compare analytics between periods
+router.get('/analytics/compare', ...adminMiddleware, compareAnalytics);
+
+// Dashboard summary with key metrics
+router.get('/analytics/summary', ...adminMiddleware, getDashboardSummary);
+
+// Comprehensive Admin Dashboard Analytics (NEW)
+router.get('/analytics/dashboard', ...adminMiddleware, getAdminDashboardAnalytics);
+
 // Advanced Analytics with filters
-router.get('/analytics/advanced', ...adminMiddleware, getAdvancedAnalyticsController);
+// router.get('/analytics/advanced', ...adminMiddleware, getAdvancedAnalyticsController);
 
 // Profile Management
 router.get('/profile', ...adminMiddleware, getProfileController);
