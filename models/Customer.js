@@ -4,8 +4,7 @@ const customerSchema = new mongoose.Schema({
   adminId: { 
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'User', 
-    required: true 
-  },
+    required: true },
   name: { 
     type: String, 
     required: true,
