@@ -56,23 +56,23 @@ app.use((req, res, next) => {
 // app.use(csrfProtection);
 
 // Rate Limiting Middleware
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.'
-});
+// const limiter = rateLimit({
+//   windowMs: 15 * 60 * 1000, // 15 minutes
+//   max: 100, // Limit each IP to 100 requests per windowMs
+//   message: 'Too many requests from this IP, please try again later.'
+// });
 
-// Custom Rate Limiting Middleware with Exceptions
-app.use((req, res, next) => {
-  // استثناء المسارات الخاصة بالمنتجات والسوبر أدمن
-  if (
-    req.path.startsWith('/api/admin/products') ||
-    req.path.startsWith('/api/superAdmin')
-  ) {
-    return next();
-  }
-  limiter(req, res, next);
-});
+// // Custom Rate Limiting Middleware with Exceptions
+// app.use((req, res, next) => {
+//   // استثناء المسارات الخاصة بالمنتجات والسوبر أدمن
+//   if (
+//     req.path.startsWith('/api/admin/products') ||
+//     req.path.startsWith('/api/superAdmin')
+//   ) {
+//     return next();
+//   }
+//   limiter(req, res, next);
+// });
 
 // Routes
 app.use('/api/auth', authRoutes);
